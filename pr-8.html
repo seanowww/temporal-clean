@@ -1,0 +1,1384 @@
+<meta charset="utf-8">
+<title>Temporal Branch Monitor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Saira+Condensed:wght@500;600;700&display=swap">
+
+<style>
+  :root {
+    --void:        #06060f;
+    --ink:         #E9E6F7;
+    --ink-dim:     #A49DC0;
+    --ink-faint:   #938CAB;
+    --line:        rgba(140,130,190,.18);
+    --line-soft:   rgba(140,130,190,.09);
+
+    --spine:       #E8B84B;   /* the shipped path */
+    --branch:      #4DE3E8;   /* live divergence */
+    --pruned:      #FF4D6D;   /* abandoned timeline */
+    --agent:       #A87BFF;   /* ai session */
+
+    --glass:       rgba(14,12,30,.78);
+    --glass-edge:  rgba(150,140,210,.22);
+
+    --step--1: 11px;
+    --step-0:  14px;
+    --step-2:  21px;
+    --step-3:  30px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--void);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    font-size: var(--step-0);
+    line-height: 1.55;
+    overflow: hidden;
+    height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #nebula, #threads {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  #nebula { z-index: 0; opacity: .55; }
+  #threads { z-index: 1; }
+
+  .vignette {
+    position: fixed; inset: 0; z-index: 2; pointer-events: none;
+    background:
+      radial-gradient(110% 70% at 42% 50%, transparent 28%, rgba(6,6,15,.5) 70%, rgba(6,6,15,.9) 100%);
+  }
+
+  /* ---------- chrome ---------- */
+
+  .eyebrow {
+    font-family: "Saira Condensed", "IBM Plex Sans", sans-serif;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .22em;
+    font-size: var(--step--1);
+    color: var(--ink-faint);
+  }
+
+  header.hud {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 6;
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 32px;
+    padding: 22px 30px 34px;
+    background: linear-gradient(180deg, rgba(6,6,15,.94) 30%, rgba(6,6,15,0) 100%);
+    pointer-events: none;
+  }
+  header.hud > * { pointer-events: auto; }
+
+  .mark { display: flex; align-items: baseline; gap: 12px; }
+  .mark h1 {
+    font-family: "Saira Condensed", sans-serif;
+    font-weight: 700;
+    font-size: var(--step-3);
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    margin: 0; line-height: 1;
+  }
+  .mark .sub {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: var(--step--1);
+    color: var(--spine);
+    letter-spacing: .08em;
+  }
+  .pr-line {
+    margin-top: 7px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: var(--step--1);
+    color: var(--ink-dim);
+  }
+  .pr-line b { color: var(--ink); font-weight: 500; }
+
+  .readout {
+    text-align: right;
+    display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+  }
+  .recovered {
+    font-family: "Saira Condensed", sans-serif;
+    font-size: var(--step-2);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+  .recovered em { font-style: normal; color: var(--branch); font-variant-numeric: tabular-nums; }
+  .meter {
+    width: 210px; height: 3px; border-radius: 2px;
+    background: rgba(140,130,190,.16);
+    overflow: hidden;
+  }
+  .meter i {
+    display: block; height: 100%; width: 100%;
+    transform: scaleX(0); transform-origin: left center;
+    background: linear-gradient(90deg, var(--agent), var(--branch));
+    box-shadow: 0 0 12px var(--branch);
+    transition: transform .9s cubic-bezier(.16,1,.3,1);
+  }
+  .readout .note {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: var(--step--1);
+    color: var(--ink-faint);
+  }
+  .readout .note b { color: var(--pruned); font-weight: 500; }
+
+  /* ---------- scroll field ---------- */
+
+  #field {
+    position: fixed; inset: 0; z-index: 4;
+    overflow-y: auto; overflow-x: hidden;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(140,130,190,.3) transparent;
+  }
+  #field::-webkit-scrollbar { width: 9px; }
+  #field::-webkit-scrollbar-track { background: transparent; }
+  #field::-webkit-scrollbar-thumb { background: rgba(140,130,190,.22); border-radius: 5px; }
+
+  #stage { position: relative; width: 100%; }
+
+  /* ---------- nodes ---------- */
+
+  .node {
+    position: absolute;
+    background: none; border: 0; padding: 0; margin: 0;
+    cursor: grab;
+    color: inherit; font: inherit;
+    opacity: 0;
+    touch-action: none;
+    transition: opacity .5s ease;
+    will-change: transform;
+  }
+  .node.lit { opacity: 1; }
+  .node.lit.dim { opacity: .2; }
+  .node.dragging { cursor: grabbing; z-index: 3; }
+
+  .orb {
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--c) 18%, rgba(8,7,18,.94));
+    border: 1px solid color-mix(in srgb, var(--c) 58%, rgba(255,255,255,.16));
+    box-shadow: 0 0 0 1px rgba(255,255,255,.35) inset,
+                0 0 14px var(--c),
+                0 0 38px color-mix(in srgb, var(--c) 55%, transparent);
+    transition: transform .28s cubic-bezier(.16,1,.3,1), box-shadow .28s ease;
+  }
+  .node[data-pruned="1"] .orb {
+    background: rgba(20,7,16,.82);
+    border: 1.5px dashed var(--c);
+    box-shadow: 0 0 16px color-mix(in srgb, var(--c) 40%, transparent);
+  }
+  .orb .source-logo {
+    width: 58%; height: 58%;
+    display: block;
+    color: #fff;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,.45));
+    overflow: visible;
+  }
+  .node[data-source="notion"] .source-logo { color: #f5f3fa; }
+  .node[data-source="git"] .source-logo { color: #fff; }
+  .node[data-pruned="1"] .source-logo { opacity: .72; }
+  .node:hover .orb,
+  .node:focus-visible .orb,
+  .node.dragging .orb,
+  .node.active .orb {
+    transform: scale(1.45);
+    box-shadow: 0 0 0 1px rgba(255,255,255,.6) inset,
+                0 0 26px var(--c),
+                0 0 70px var(--c);
+  }
+  .node:focus-visible { outline: none; }
+
+  .label {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 208px;
+    color: var(--ink-dim);
+    pointer-events: none;
+    transition: color .2s ease, opacity .2s ease;
+  }
+  .node[data-place="left"]  .label { right: calc(50% + var(--gap)); text-align: right; }
+  .node[data-place="right"] .label { left:  calc(50% + var(--gap)); text-align: left; }
+  .label .src {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--c);
+    display: block;
+    margin-bottom: 2px;
+  }
+  .label .txt {
+    font-size: 13px;
+    line-height: 1.35;
+    display: block;
+    text-wrap: balance;
+  }
+  .label .when {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+    display: block;
+    margin-top: 3px;
+    font-variant-numeric: tabular-nums;
+  }
+  .node.minor .label { opacity: 0; }
+  .node.minor:hover .label,
+  .node.minor:focus-visible .label,
+  .node.minor.dragging .label { opacity: 1; }
+  .node:hover .label .txt, .node.active .label .txt { color: var(--ink); }
+
+  .node.pulse .orb { animation: beacon 2.6s ease-in-out infinite; }
+  @keyframes beacon {
+    0%, 100% { box-shadow: 0 0 0 1px rgba(255,255,255,.35) inset, 0 0 14px var(--c), 0 0 34px color-mix(in srgb, var(--c) 50%, transparent); }
+    50%      { box-shadow: 0 0 0 1px rgba(255,255,255,.55) inset, 0 0 26px var(--c), 0 0 76px color-mix(in srgb, var(--c) 75%, transparent); }
+  }
+
+  /* ---------- axis ---------- */
+
+  .tick {
+    position: absolute;
+    left: 30px;
+    transform: translateY(-50%);
+    display: flex; align-items: center; gap: 10px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    pointer-events: none;
+  }
+  .tick::after {
+    content: ""; display: block;
+    width: 22px; height: 1px;
+    background: var(--line);
+  }
+  .tick.now { color: var(--spine); }
+  .tick.now::after { background: color-mix(in srgb, var(--spine) 50%, transparent); }
+
+  /* ---------- footer ---------- */
+
+  footer.deck {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 6;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 28px;
+    padding: 32px 30px 22px;
+    background: linear-gradient(0deg, rgba(6,6,15,.95) 25%, rgba(6,6,15,0) 100%);
+    pointer-events: none;
+  }
+  footer.deck > * { pointer-events: auto; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 8px; max-width: 58vw; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    min-height: 44px;
+    padding: 8px 13px 8px 11px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: rgba(12,10,26,.6);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    cursor: pointer;
+    transition: border-color .2s, color .2s;
+  }
+  .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--c); box-shadow: 0 0 8px var(--c); }
+  .chip .source-logo { width: 13px; height: 13px; color: var(--ink); }
+  .chip:hover { border-color: var(--glass-edge); color: var(--ink); }
+  .chip[aria-pressed="false"] { color: var(--ink-faint); border-color: var(--line-soft); }
+  .chip[aria-pressed="false"] .source-logo { filter: grayscale(1); opacity: .42; }
+  .chip:focus-visible { outline: 1px solid var(--branch); outline-offset: 2px; }
+
+  .replay {
+    display: inline-flex; align-items: center; gap: 10px;
+    min-height: 44px;
+    padding: 10px 18px;
+    border: 1px solid var(--glass-edge);
+    border-radius: 2px;
+    background: rgba(12,10,26,.72);
+    color: var(--ink);
+    font-family: "Saira Condensed", sans-serif;
+    font-size: var(--step-0);
+    font-weight: 600;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .replay:hover { border-color: var(--branch); box-shadow: 0 0 22px rgba(77,227,232,.22); }
+  .replay:focus-visible { outline: 1px solid var(--branch); outline-offset: 3px; }
+  .control-icon { width: 16px; height: 16px; fill: currentColor; stroke: currentColor; stroke-width: 1.5; }
+  .replay .control-icon { color: var(--branch); stroke: none; }
+
+  /* ---------- drawer ---------- */
+
+  aside.drawer {
+    position: fixed; top: 0; right: 0; bottom: 0; z-index: 8;
+    width: min(440px, 92vw);
+    background: var(--glass);
+    backdrop-filter: blur(22px) saturate(130%);
+    -webkit-backdrop-filter: blur(22px) saturate(130%);
+    border-left: 1px solid var(--glass-edge);
+    transform: translateX(102%);
+    transition: transform .42s cubic-bezier(.16,1,.3,1);
+    display: flex; flex-direction: column;
+    box-shadow: -40px 0 90px rgba(0,0,0,.55);
+  }
+  aside.drawer.open { transform: translateX(0); }
+
+  .drawer-head {
+    padding: 26px 28px 20px;
+    border-bottom: 1px solid var(--line-soft);
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .drawer-head .row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px; letter-spacing: .15em; text-transform: uppercase;
+    color: var(--c);
+  }
+  .badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c); box-shadow: 0 0 8px var(--c); }
+  .close {
+    background: none; border: 1px solid var(--line);
+    color: var(--ink-dim); width: 44px; height: 44px; display: grid; place-items: center; border-radius: 2px;
+    cursor: pointer; font-size: 14px; line-height: 1;
+    transition: color .2s, border-color .2s;
+  }
+  .close:hover { color: var(--ink); border-color: var(--glass-edge); }
+  .close .control-icon { fill: none; }
+  .close:focus-visible { outline: 1px solid var(--branch); outline-offset: 2px; }
+
+  .drawer-head h2 {
+    font-family: "Saira Condensed", sans-serif;
+    font-weight: 600;
+    font-size: var(--step-2);
+    line-height: 1.15;
+    letter-spacing: .03em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .stamp {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: var(--step--1);
+    color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+  }
+  .stamp b { color: var(--ink-dim); font-weight: 400; }
+
+  .drawer-body {
+    padding: 22px 28px 32px;
+    overflow-y: auto;
+    display: flex; flex-direction: column; gap: 24px;
+  }
+  .drawer-body::-webkit-scrollbar { width: 8px; }
+  .drawer-body::-webkit-scrollbar-thumb { background: rgba(140,130,190,.22); border-radius: 4px; }
+
+  .block > .eyebrow { display: block; margin-bottom: 9px; }
+  .block p { margin: 0; color: var(--ink-dim); }
+  .block p strong { color: var(--ink); font-weight: 500; }
+
+  .excerpt {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--ink-dim);
+    background: rgba(6,6,15,.6);
+    border: 1px solid var(--line-soft);
+    border-left: 2px solid var(--c);
+    padding: 14px 16px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    margin: 0;
+  }
+  .excerpt .who { color: var(--c); }
+
+  /* Source-native records: deterministic, screenshot-like reconstructions. */
+  .source-shot {
+    overflow: hidden;
+    background: #f7f7f8;
+    color: #222;
+    border-radius: 12px;
+    box-shadow: 0 18px 45px rgba(0,0,0,.32);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .shot-bar {
+    min-height: 42px; padding: 0 13px;
+    display: flex; align-items: center; gap: 9px;
+    border-bottom: 1px solid rgba(0,0,0,.09);
+    font-size: 12px; font-weight: 650;
+  }
+  .shot-bar .source-logo { width: 18px; height: 18px; flex: none; }
+  .shot-bar small { margin-left: auto; color: #777; font-weight: 500; }
+  .slack-shot { background: #fff; }
+  .slack-shot .shot-bar { color: #1d1c1d; }
+  .slack-shot .channel { padding: 10px 14px; border-bottom: 1px solid #ddd; font-size: 12px; font-weight: 700; }
+  .slack-message { display: grid; grid-template-columns: 34px 1fr; gap: 10px; padding: 13px 14px; }
+  .slack-message + .slack-message { padding-top: 3px; }
+  .avatar {
+    width: 34px; height: 34px; border-radius: 7px;
+    display: grid; place-items: center;
+    background: #5f3dc4; color: white; font-size: 12px; font-weight: 750;
+  }
+  .slack-message:nth-of-type(odd) .avatar { background: #1264a3; }
+  .msg-meta { display: flex; align-items: baseline; gap: 7px; line-height: 1; }
+  .msg-meta b { font-size: 13px; }
+  .msg-meta time { font-size: 10px; color: #777; }
+  .msg-copy { margin-top: 5px; font-size: 12px; line-height: 1.45; white-space: pre-line; color: #292729; }
+  .claude-shot { background: #f7f4ed; color: #28231f; }
+  .claude-shot .shot-bar { background: #eee9df; border-color: #ded7ca; }
+  .claude-thread { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+  .claude-bubble { padding: 10px 12px; border-radius: 10px; font: 11.5px/1.48 "IBM Plex Mono", monospace; white-space: pre-line; }
+  .claude-bubble.user { margin-left: 18px; background: #e7e1d7; }
+  .claude-bubble.assistant { margin-right: 9px; background: #fffdf8; border: 1px solid #ded7ca; }
+  .claude-bubble .speaker { display: block; margin-bottom: 5px; font: 700 10px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #9b4a2f; text-transform: uppercase; letter-spacing: .08em; }
+  .shot-caption { padding: 9px 13px; border-top: 1px solid rgba(0,0,0,.08); font-size: 10px; color: #777; }
+
+  .tests { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .tests li { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: var(--ink-dim); }
+  .tests li::before {
+    content: ""; flex: none;
+    width: 5px; height: 5px; margin-top: 7px; border-radius: 50%;
+    background: var(--branch); box-shadow: 0 0 8px var(--branch);
+  }
+
+  .drift {
+    border: 1px solid rgba(255,77,109,.32);
+    background: rgba(255,77,109,.07);
+    padding: 13px 15px;
+    font-size: 13px;
+    color: #FFC2CD;
+  }
+  .drift .eyebrow { color: var(--pruned); }
+
+  .hint {
+    position: fixed; z-index: 5; right: 30px; bottom: 92px;
+    max-width: 250px; text-align: right;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px; line-height: 1.75;
+    letter-spacing: .05em;
+    color: var(--ink-faint);
+    pointer-events: none;
+    transition: opacity .3s ease;
+  }
+
+  @media (max-width: 900px) {
+    .label { width: 140px; }
+    .label .txt { font-size: 11.5px; }
+    header.hud { flex-direction: column; gap: 14px; }
+    .readout { align-items: flex-start; text-align: left; }
+    .hint { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .orb, .node, .meter i { animation: none !important; transition-duration: .01ms !important; }
+  }
+</style>
+
+<canvas id="nebula" aria-hidden="true"></canvas>
+<canvas id="threads" aria-hidden="true"></canvas>
+<div class="vignette" aria-hidden="true"></div>
+
+<header class="hud">
+  <div>
+    <div class="mark">
+      <h1>Temporal</h1>
+      <span class="sub" id="artifactMode">BRANCH MONITOR / v0.1 · SYNTHETIC DEMO</span>
+    </div>
+    <div class="pr-line">
+      <b id="prNumber">PR #128</b> &nbsp;·&nbsp; <span id="prTitle">feat(waitlist): ship privacy-safe signup</span> &nbsp;·&nbsp;
+      <b id="prFiles">6 files</b> <span id="prDelta">+214 −48</span> &nbsp;·&nbsp; <span id="prState">awaiting QA</span>
+    </div>
+  </div>
+  <div class="readout">
+    <div class="recovered"><em id="evCount">0</em> events recovered</div>
+    <div class="meter"><i id="meterFill"></i></div>
+    <div class="note"><span id="systemCount">7 systems</span> · <b id="prunedCount">2 pruned timelines</b></div>
+  </div>
+</header>
+
+<div id="field">
+  <div id="stage"></div>
+</div>
+
+<p class="hint" id="hint">
+  SCROLL TO TRAVERSE THE WEEK.<br>
+  DRAG ANY NODE — IT RETURNS.<br>
+  DASHED ORBS ARE PRUNED BRANCHES:<br>
+  WORK THAT NEVER REACHED THE DIFF.
+</p>
+
+<footer class="deck">
+  <div class="legend" id="legend"></div>
+  <button class="replay" id="replay" type="button">
+    <svg class="control-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="m5 3 7 5-7 5z"/></svg> Replay 7 days
+  </button>
+</footer>
+
+<aside class="drawer" id="drawer" aria-hidden="true" aria-label="Source record">
+  <div class="drawer-head">
+    <div class="row">
+      <span class="badge" id="dBadge"><span class="dot"></span><span id="dSrc">SLACK</span></span>
+      <button class="close" id="dClose" type="button" aria-label="Close record"><svg class="control-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 4 8 8M12 4l-8 8"/></svg></button>
+    </div>
+    <h2 id="dTitle">—</h2>
+    <div class="stamp" id="dStamp">—</div>
+  </div>
+  <div class="drawer-body" id="dBody"></div>
+</aside>
+
+<script>
+(async () => {
+  "use strict";
+
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let remoteArtifact = {"id":"pr-8-v1","pullRequestId":"pr-8","version":1,"status":"ready","generatedAt":"2026-08-23T23:56:51.901Z","summary":"2 evidence records recovered from the PR development window.","events":[{"id":"ae0ca334-02d0-4790-9e79-5ca604aa603a","t":0.1,"lane":0,"src":"git","imp":3,"place":"left","short":"test: exercise the instant HTML PR flow","title":"test: exercise the instant HTML PR flow","stamp":"github · Sean Ow","why":"It is attached to the exact commit this pull request proposes. It was recorded against branch test/instant-html-smoke.","excerpt":"test: exercise the instant HTML PR flow","tests":["Review the diff for fc552e7 against its commit message: test: exercise the instant HTML PR flow."],"pruned":false,"pulse":false,"evidenceId":"seanowww/temporal-clean@fc552e7f37b6d1d63432f00767873b85795da22f","inclusionReasons":["graph path depth 1","matching commit SHA","matching branch","same repository","touched a file this PR changes","inside PR development window"]},{"id":"9ac5891a-f681-4410-a6f0-81b6717af56f","t":0.05,"lane":0,"src":"git","imp":5,"place":"right","short":"PR #8 opened","title":"Test instant Temporal HTML publishing","stamp":"seanowww/temporal-clean · seanowww","why":"The PR is the traversal anchor. Every earlier record must explain or constrain the code under review.","excerpt":"## Purpose\n\nEnd-to-end smoke test for the public reviewer flow. Opening this PR should automatically run Temporal, publish a versioned HTML timeline to GitHub Pages, and update one bot comment with a direct browser link.","tests":[],"pulse":true,"evidenceId":"seanowww/temporal-clean#8"}],"edges":[["ae0ca334-02d0-4790-9e79-5ca604aa603a","9ac5891a-f681-4410-a6f0-81b6717af56f","spine"],["9ac5891a-f681-4410-a6f0-81b6717af56f","ae0ca334-02d0-4790-9e79-5ca604aa603a","context"]],"coverage":[{"source":"git","records":2,"status":"complete"}],"excluded":{"transcriptDetail":0,"outsideWindow":0,"lowSignal":0},"gaps":[],"hasPrunedBranch":false,"pullRequest":{"number":8,"repository":"seanowww/temporal-clean","title":"Test instant Temporal HTML publishing","author":"seanowww","filesChanged":1,"additions":8,"deletions":0}};
+  const artifactId = new URLSearchParams(window.location.search).get("artifact") || "johnny-waitlist-demo";
+  if (window.location.protocol === "http:" || window.location.protocol === "https:") {
+    try {
+      const response = await fetch("/api/artifacts/" + encodeURIComponent(artifactId));
+      if (response.ok) remoteArtifact = await response.json();
+    } catch (_) {
+      // The self-contained file remains usable without a server.
+    }
+  }
+  if (remoteArtifact?.pullRequest) {
+    const pr = remoteArtifact.pullRequest;
+    document.getElementById("artifactMode").textContent = "BRANCH MONITOR / v0.1 · LIVE ARTIFACT";
+    document.getElementById("prNumber").textContent = `PR #${pr.number}`;
+    document.getElementById("prTitle").textContent = pr.title;
+    document.getElementById("prFiles").textContent = pr.filesChanged == null ? pr.repository : `${pr.filesChanged} files`;
+    document.getElementById("prDelta").textContent = pr.additions == null ? `· ${pr.author}` : `+${pr.additions} −${pr.deletions || 0}`;
+    document.getElementById("prState").textContent = remoteArtifact.status === "ready" ? "ready for review" : remoteArtifact.status;
+    document.getElementById("systemCount").textContent = `${remoteArtifact.coverage?.length || 0} systems`;
+  }
+
+  /* =====================================================================
+     1. THE RECORD — seeded demo data (one PR, seven days, four systems)
+     ===================================================================== */
+
+  const SOURCE_LOGOS = {
+    slack: `<svg class="source-logo" viewBox="0 0 24 24" aria-hidden="true"><path fill="#36C5F0" d="M9.8 2.2a2.2 2.2 0 0 1 0 4.4H7.6V4.4a2.2 2.2 0 0 1 2.2-2.2Z"/><path fill="#2EB67D" d="M21.8 9.8a2.2 2.2 0 0 1-4.4 0V7.6h2.2a2.2 2.2 0 0 1 2.2 2.2Z"/><path fill="#ECB22E" d="M14.2 21.8a2.2 2.2 0 0 1 0-4.4h2.2v2.2a2.2 2.2 0 0 1-2.2 2.2Z"/><path fill="#E01E5A" d="M2.2 14.2a2.2 2.2 0 0 1 4.4 0v2.2H4.4a2.2 2.2 0 0 1-2.2-2.2Z"/><path fill="#36C5F0" d="M7.6 7.6h2.2v5.8H7.6z"/><path fill="#2EB67D" d="M10.6 7.6h5.8v2.2h-5.8z"/><path fill="#ECB22E" d="M14.2 10.6h2.2v5.8h-2.2z"/><path fill="#E01E5A" d="M7.6 14.2h5.8v2.2H7.6z"/></svg>`,
+    notion: `<svg class="source-logo" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.2" y="2.8" width="17.6" height="18.4" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.8"/><path fill="currentColor" d="M7 7h3.6l5.1 7.7V8.8l-1.7-.3V7h5v1.5l-1.4.3V17h-2.2L9 7.8v7.3l1.8.4V17H6v-1.5l1.4-.4V8.7L7 8.5z"/></svg>`,
+    claude: `<svg class="source-logo" viewBox="0 0 24 24" aria-hidden="true"><path fill="#D97757" d="m12 2.3 1.45 7.03 4.82-5.32-3.37 6.34 6.8-2.33-6.2 3.65 6.2 3.65-6.8-2.33 3.37 6.34-4.82-5.32L12 21.7l-1.45-7.69-4.82 5.32 3.37-6.34-6.8 2.33 6.2-3.65-6.2-3.65 6.8 2.33-3.37-6.34 4.82 5.32z"/></svg>`,
+    codex: `<svg class="source-logo" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2a4.4 4.4 0 0 1 7.55 3.07A4.4 4.4 0 0 1 20 14.7a4.4 4.4 0 0 1-7.55 3.08A4.4 4.4 0 0 1 4.9 14.7a4.4 4.4 0 0 1-.45-8.43A4.4 4.4 0 0 1 12 3.2Z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m8.2 9.7 3.8-2.2 3.8 2.2v4.6L12 16.5l-3.8-2.2z" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>`,
+    git: `<svg class="source-logo" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.4a9.6 9.6 0 0 0-3.03 18.7c.48.09.66-.21.66-.46v-1.68c-2.69.58-3.26-1.14-3.26-1.14-.44-1.12-1.08-1.42-1.08-1.42-.88-.6.07-.59.07-.59.97.07 1.49 1 1.49 1 .87 1.48 2.27 1.05 2.83.8.09-.63.34-1.05.62-1.3-2.15-.24-4.4-1.07-4.4-4.75 0-1.05.37-1.9 1-2.58-.1-.24-.43-1.22.09-2.54 0 0 .81-.26 2.64.98A9.2 9.2 0 0 1 12 7.2c.82 0 1.63.11 2.4.32 1.83-1.24 2.63-.98 2.63-.98.53 1.32.2 2.3.1 2.54.62.68 1 1.53 1 2.58 0 3.69-2.27 4.5-4.42 4.74.35.3.66.9.66 1.8v2.44c0 .25.17.55.67.46A9.6 9.6 0 0 0 12 2.4Z"/></svg>`,
+    jira: `<svg class="source-logo" viewBox="0 0 24 24" aria-hidden="true"><path fill="#2684FF" d="M21.5 11.6 13 3.1 12 2l-6.4 6.4-3 3a.85.85 0 0 0 0 1.2l5.9 5.9 3.5 3.5 6.4-6.4.1-.1 3-3a.64.64 0 0 0 .1-.9ZM12 15.4 8.6 12 12 8.6l3.4 3.4-3.4 3.4Z"/></svg>`,
+    supabase: `<svg class="source-logo" viewBox="0 0 24 24" aria-hidden="true"><path fill="#3ECF8E" d="M13.2 22c-.35.44-1.06.2-1.07-.36l-.13-7.2H5.6a.8.8 0 0 1-.62-1.3L10.8 2c.33-.5 1.1-.27 1.1.33l.08 7.23h6.45a.8.8 0 0 1 .62 1.3L13.2 22Z"/></svg>`
+  };
+
+  const SOURCES = {
+    slack:   { label: "Slack",       color: "#4DE3E8" },
+    notion:  { label: "Notion",      color: "#B9B2D6" },
+    claude:  { label: "Claude Code", color: "#A87BFF" },
+    codex:   { label: "Codex",       color: "#7B5CFF" },
+    git:      { label: "GitHub",      color: "#E8B84B" },
+    jira:     { label: "Jira",        color: "#2684FF" },
+    supabase: { label: "Supabase",    color: "#3ECF8E" }
+  };
+
+  // t = days before the PR.  lane: 0 = shipped spine, -1 = left divergence, +1 = right.
+  const FALLBACK_EVENTS = [
+    {
+      id: "ticket", t: 7.2, lane: 0, src: "jira", imp: 10, place: "right", pulse: true,
+      short: "WL-204: simple waitlist requested",
+      title: "WL-204 opens with five requested fields",
+      stamp: "Jira · WL-204 · Maya Chen (PM) → Johnny Park",
+      why: "This is the original scope QA would otherwise reconstruct by asking Johnny. The requested waitlist captures <strong>Name, Organization, Email, Phone Number, and Picture of Face</strong>.",
+      excerpt: "Build a simple waitlist for the launch page.\n\nFields:\n• Name\n• Organization\n• Email\n• Phone Number\n• Picture of Face\n\nOwner: Johnny · QA: Javier",
+      tests: ["Confirm the final form can be traced back to this original five-field request"]
+    },
+    {
+      id: "brief", t: 4.1, lane: 0, src: "codex", imp: 2, place: "right",
+      short: "Phone removal verified across the stack",
+      title: "Codex verifies the privacy edit is complete",
+      stamp: "Codex · waitlist removal scan",
+      why: "A small mainline checkpoint confirming the removed field did not leave an orphaned API or schema reference.",
+      excerpt: "Checked: form, validation, API payload, migration.\nphone_number references: 0", tests: []
+    },
+    {
+      id: "initial", t: 6.4, lane: 0, src: "git", imp: 8, place: "right",
+      short: "Johnny implements all five fields",
+      title: "Initial waitlist implementation matches the ticket",
+      stamp: "GitHub · johnny/waitlist-v1 · 4 commits",
+      why: "The first implementation is faithful to the ticket: all five fields exist. This makes the later omissions deliberate decisions, not forgotten work.",
+      excerpt: "feat(waitlist): add signup form\n\nname · organization · email · phone_number · face_photo",
+      tests: ["Do not file missing Phone or Picture as regressions before reviewing their decision records"]
+    },
+    {
+      id: "schema", t: 5.6, lane: -1, src: "supabase", imp: 2, place: "left", ambient: true,
+      short: "Phone field exists in the first schema",
+      title: "Initial Supabase schema includes Phone Number",
+      stamp: "Supabase · migration 031_waitlist.sql",
+      why: "Routine implementation evidence between the first commit and the privacy review.",
+      excerpt: "create table waitlist_entries (... phone text, face_photo_url text);", tests: []
+    },
+    {
+      id: "privacy", t: 6.1, lane: 0, src: "slack", imp: 10, place: "right", pulse: true,
+      short: "PM flags privacy and legal risk",
+      title: "PM asks Johnny to remove Phone Number",
+      stamp: "#proj-waitlist · Maya Chen (PM) ↔ Johnny Park",
+      why: "This is the governing product decision for the first scope change. QA can see that Phone Number was removed intentionally because consent, retention, and legal review were not ready.",
+      excerpt: '<span class="who">maya</span>    Legal flagged phone collection. We have no\n        consent copy or retention policy approved.\n        Please remove Phone Number from v1.\n<span class="who">johnny</span>  Got it — I’ll keep Name, Organization,\n        Email, and Picture for this PR.',
+      tests: ["Confirm Phone Number is absent from UI, validation, payload, and database migration", "Verify no phone value is logged or retained"]
+    },
+    {
+      id: "legal", t: 5.2, lane: -1, src: "notion", imp: 8, place: "left",
+      short: "Privacy checklist referenced",
+      title: "Privacy checklist attached to WL-204",
+      stamp: "Notion · Data collection checklist",
+      why: "Supporting context for the PM decision, intentionally de-emphasized because the Slack instruction is the direct evidence.",
+      excerpt: "New personal data fields require purpose, consent, retention, and deletion review.", tests: []
+    },
+    {
+      id: "phone-cut", t: 5.0, lane: -1, src: "git", imp: 8, place: "left", pruned: true,
+      short: "Phone Number pruned from v1",
+      title: "Phone Number is removed across the stack",
+      stamp: "GitHub · commit 8a21f6 · Johnny Park",
+      why: "The code consequence of the privacy decision. The dashed branch shows a requested feature that intentionally never reaches the final PR scope.",
+      excerpt: "refactor(waitlist): remove phone collection\n\n- input and validation\n- API field\n- Supabase column",
+      tests: ["Search the diff and schema for orphaned phone_number references"]
+    },
+    {
+      id: "scope-confirmed", t: 4.8, lane: 0, src: "slack", imp: 4, place: "right",
+      short: "Privacy-safe scope confirmed",
+      title: "PM confirms the revised four-field scope",
+      stamp: "#proj-waitlist · Maya Chen (PM)",
+      why: "The phone-removal branch rejoins the shipped path here. At this point v1 contains Name, Organization, Email, and Picture of Face.",
+      excerpt: '<span class="who">maya</span>    Confirmed for v1: Name, Organization, Email,\n        and Picture. Phone stays out pending legal review.',
+      tests: ["Treat Phone Number as intentionally excluded from this PR"]
+    },
+    {
+      id: "claude-review", t: 3.8, lane: 0, src: "claude", imp: 10, place: "right", pulse: true,
+      short: "Claude finds photo storage is not ready",
+      title: "Claude review surfaces the missing photo-storage path",
+      stamp: "Claude Code · session wt-031 · Johnny Park · 18 min",
+      why: "The second hidden decision starts here. Reviewing the Supabase setup reveals that the project has a database table but <strong>no configured object-storage bucket, upload policy, or signed URL flow</strong> for face photos.",
+      excerpt: '<span class="who">johnny</span>  review the Supabase setup for face_photo\n<span class="who">claude</span>  The table can store a URL, but this project has\n        no Storage bucket or RLS policy configured.\n        There is no ready S3-compatible upload path.\n        Shipping the field now would create a broken or\n        insecure photo flow.',
+      tests: ["Confirm the final form never offers a dead photo upload", "Verify no public bucket or permissive storage policy was introduced"]
+    },
+    {
+      id: "storage-scan", t: 3.1, lane: 1, src: "supabase", imp: 2, place: "right", ambient: true,
+      short: "Storage policies scanned",
+      title: "Supabase storage inventory returns no app bucket",
+      stamp: "Supabase · project storage inventory",
+      why: "Machine evidence supporting Claude’s finding. It stays small because it confirms rather than decides.",
+      excerpt: "Buckets: 0 · Upload policies: 0 · Signed URL handler: none", tests: []
+    },
+    {
+      id: "senior", t: 2.8, lane: 1, src: "slack", imp: 10, place: "right", pulse: true,
+      short: "Senior SWE delays S3 setup",
+      title: "Senior SWE tells Johnny to defer photo storage",
+      stamp: "#eng-help · Elena Ruiz (Senior SWE) ↔ Johnny Park",
+      why: "This conversation turns a technical discovery into an explicit scope decision. Secure object storage needs a separate setup and review, so the Picture field is deferred rather than improvised.",
+      excerpt: '<span class="who">johnny</span>  Claude found no bucket or upload policy. Should I\n        add the S3-compatible storage setup here?\n<span class="who">elena</span>   Not in this PR. Bucket, RLS, retention, and\n        deletion need their own reviewed change. Delay it.\n<span class="who">johnny</span>  Understood — removing Picture from v1.',
+      tests: ["Confirm photo storage is not partially configured in this PR", "Track the deferred storage work separately before reintroducing Picture"]
+    },
+    {
+      id: "photo-cut", t: 2.3, lane: 0, src: "git", imp: 8, place: "right",
+      short: "Picture of Face pruned from v1",
+      title: "Picture of Face is removed from the waitlist",
+      stamp: "GitHub · commit b71c04 · Johnny Park",
+      why: "The code consequence of the storage decision. QA now knows the missing photo field is intentional and can test the smaller, safe scope.",
+      excerpt: "refactor(waitlist): defer face photo\n\nFinal fields: Name · Organization · Email",
+      tests: ["Confirm file inputs, multipart handling, and face_photo_url are completely absent"]
+    },
+    {
+      id: "ticket-update", t: 2.1, lane: 0, src: "jira", imp: 3, place: "right",
+      short: "Acceptance criteria synced",
+      title: "WL-204 acceptance criteria updated",
+      stamp: "Jira · automated linkback",
+      why: "A small housekeeping record showing the implementation and ticket have converged.",
+      excerpt: "v1 fields: Name, Organization, Email. Phone blocked by privacy review. Photo deferred with storage setup.", tests: []
+    },
+    {
+      id: "qa-tests", t: 1.1, lane: -1, src: "jira", imp: 2, place: "left", pruned: true,
+      short: "Secure photo storage deferred",
+      title: "Follow-up ticket holds the deferred storage work",
+      stamp: "Jira · WL-219 · blocked from this PR",
+      why: "This is an intentionally pruned timeline: bucket, RLS, retention, and deletion work will happen separately before Picture returns.",
+      excerpt: "WL-219 · Configure secure photo storage\nStatus: deferred · Not part of PR #128", tests: []
+    },
+    {
+      id: "pr", t: 0.15, lane: 0, src: "git", imp: 10, place: "right", pulse: true,
+      short: "PR #128 opened — Temporal assembles context",
+      title: "PR #128 opens with the full decision trail attached",
+      stamp: "GitHub · 6 files · +214 −48 · Johnny Park",
+      why: "Temporal gives Javier the full pipeline in one artifact: original five-field ticket, privacy removal, storage discovery, senior decision, and final three-field scope. <strong>QA can review without interrupting Johnny to reconstruct the week.</strong>",
+      excerpt: "feat(waitlist): ship privacy-safe signup\n\nFinal fields:\n✓ Name\n✓ Organization\n✓ Email\n\nDeferred:\n— Phone Number · privacy/legal\n— Picture of Face · secure storage setup",
+      tests: ["Submit valid Name, Organization, and Email", "Verify all three fields are required and validation errors are accessible", "Confirm Phone Number and Picture are absent by design — not defects"]
+    }
+  ];
+
+  const EVENTS = remoteArtifact?.events?.length ? remoteArtifact.events : FALLBACK_EVENTS;
+
+  const FALLBACK_EDGES = [
+    ["ticket",          "initial",         "spine"],
+    ["initial",         "privacy",         "spine"],
+    ["privacy",         "schema",          "branch"],
+    ["schema",          "legal",           "branch"],
+    ["legal",           "phone-cut",       "pruned"],
+    ["phone-cut",       "scope-confirmed", "branch"],
+    ["privacy",         "scope-confirmed", "spine"],
+    ["scope-confirmed", "brief",           "spine"],
+    ["brief",           "claude-review",   "spine"],
+    ["claude-review",   "storage-scan",    "branch"],
+    ["storage-scan",    "senior",          "branch"],
+    ["senior",          "photo-cut",       "branch"],
+    ["claude-review",   "photo-cut",       "spine"],
+    ["photo-cut",       "ticket-update",   "spine"],
+    ["photo-cut",       "qa-tests",        "pruned"],
+    ["ticket-update",   "pr",              "spine"]
+  ];
+
+  const EDGES = remoteArtifact?.edges?.length ? remoteArtifact.edges : FALLBACK_EDGES;
+
+  const CHANNEL = {
+    spine:  { color: "#E8B84B", width: 2.1, alpha: 0.95, blur: 16 },
+    branch: { color: "#4DE3E8", width: 1.5, alpha: 0.75, blur: 10 },
+    pruned: { color: "#FF4D6D", width: 1.2, alpha: 0.5,  blur: 10 }
+  };
+
+  const byId = Object.fromEntries(EVENTS.map(e => [e.id, e]));
+
+  // adjacency, for Obsidian-style neighbour highlighting
+  const neighbours = {};
+  EVENTS.forEach(e => (neighbours[e.id] = new Set([e.id])));
+  EDGES.forEach(([a, b]) => { neighbours[a].add(b); neighbours[b].add(a); });
+
+  /* =====================================================================
+     2. NEBULA — Synaptic Shift shader, ported to raw WebGL (no deps)
+     ===================================================================== */
+
+  function initNebula(canvas) {
+    const gl = canvas.getContext("webgl", { alpha: true, antialias: true, premultipliedAlpha: false });
+    if (!gl) { canvas.style.display = "none"; return { draw() {}, resize() {}, live: false }; }
+
+    const vs = `
+      attribute vec2 aPos;
+      varying vec2 vUv;
+      void main() { vUv = aPos * 0.5 + 0.5; gl_Position = vec4(aPos, 0.0, 1.0); }
+    `;
+    const fs = `
+      precision highp float;
+      uniform float uTime;
+      uniform vec2  uResolution;
+      uniform vec2  uPointer;
+      uniform vec3  uColor;
+      uniform float uSpeed, uScale, uIntensity, uFalloff, uComplexity;
+      varying vec2 vUv;
+
+      mat2 rotate2D(float r) { return mat2(cos(r), sin(r), -sin(r), cos(r)); }
+
+      void main() {
+        vec2 uv = (vUv * uResolution - 0.5 * uResolution) / uResolution.y;
+        float t = uTime * uSpeed;
+
+        vec2 n = vec2(0.0), q = vec2(0.0), N = vec2(0.0);
+        vec2 p = uv + sin(t * 0.1) / 10.0;
+        float S = 10.0 * uScale;
+        mat2 m = rotate2D(1.0 - uPointer.x * 0.0001);
+
+        for (float i = 0.0; i < 50.0; i++) {
+          if (i >= uComplexity) break;
+          float j = i + 1.0;
+          p *= m; n *= m;
+          q = p * S + j + n + t;
+          n += sin(q);
+          N += cos(q) / S;
+          S *= uFalloff;
+        }
+
+        float b = pow(max((N.x + N.y + 0.2) + 0.005 / max(length(N), 1e-4), 0.0), uIntensity);
+        vec3 col = uColor * vec3(1.0, 2.0, 4.0) * b;
+        gl_FragColor = vec4(col, clamp(b, 0.0, 1.0));
+      }
+    `;
+
+    const compile = (type, src) => {
+      const s = gl.createShader(type);
+      gl.shaderSource(s, src); gl.compileShader(s);
+      return s;
+    };
+    const prog = gl.createProgram();
+    gl.attachShader(prog, compile(gl.VERTEX_SHADER, vs));
+    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fs));
+    gl.linkProgram(prog);
+    gl.useProgram(prog);
+
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(prog, "aPos");
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+    const U = n => gl.getUniformLocation(prog, n);
+    const u = {
+      time: U("uTime"), res: U("uResolution"), ptr: U("uPointer"), col: U("uColor"),
+      speed: U("uSpeed"), scale: U("uScale"), intensity: U("uIntensity"),
+      falloff: U("uFalloff"), complexity: U("uComplexity")
+    };
+
+    gl.uniform3f(u.col, 0.20, 0.11, 0.34);
+    gl.uniform1f(u.speed, 0.22);
+    gl.uniform1f(u.scale, 0.42);
+    gl.uniform1f(u.intensity, 2.5);
+    gl.uniform1f(u.falloff, 1.16);
+    gl.uniform1f(u.complexity, 9.0);
+
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+
+    const ptr = { x: 0, y: 0, tx: 0, ty: 0 };
+    window.addEventListener("pointermove", e => {
+      ptr.tx = e.clientX - window.innerWidth / 2;
+      ptr.ty = e.clientY - window.innerHeight / 2;
+    }, { passive: true });
+
+    function resize() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width  = Math.floor(window.innerWidth  * dpr);
+      canvas.height = Math.floor(window.innerHeight * dpr);
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.uniform2f(u.res, canvas.width, canvas.height);
+    }
+    resize();
+
+    function draw(seconds) {
+      ptr.x += (ptr.tx - ptr.x) * 0.06;
+      ptr.y += (ptr.ty - ptr.y) * 0.06;
+      gl.uniform2f(u.ptr, ptr.x, ptr.y);
+      gl.uniform1f(u.time, seconds);
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    }
+
+    if (reduced) draw(12.0);
+    return { draw, resize, live: !reduced };
+  }
+
+  /* =====================================================================
+     3. VERTICAL LAYOUT — time runs top (7d ago) to bottom (the PR)
+     ===================================================================== */
+
+  const field   = document.getElementById("field");
+  const stage   = document.getElementById("stage");
+  const threads = document.getElementById("threads");
+  const tctx    = threads.getContext("2d");
+  const nebula  = initNebula(document.getElementById("nebula"));
+
+  const PAD_TOP = 148, PAD_BOTTOM = 150, PX_PER_DAY = 196, MIN_GAP = 72;
+
+  let W = 0, H = 0, contentH = 0, spineX = 0, laneGap = 0;
+  const nodeEls = new Map();
+  const ordered = [...EVENTS].sort((a, b) => b.t - a.t);   // oldest first, top to bottom
+
+  function layout() {
+    W = window.innerWidth;
+    H = window.innerHeight;
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    threads.width  = Math.floor(W * dpr);
+    threads.height = Math.floor(H * dpr);
+    tctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    spineX  = Math.max(210, Math.min(W * 0.40, W - 420));
+    laneGap = Math.min(190, Math.max(110, W * 0.15));
+
+    // Position by time, but never let two events collide: real elapsed time
+    // still shows in the gaps, dense stretches just get pushed apart.
+    const t0 = ordered[0].t;
+    let prevY = -Infinity;
+    ordered.forEach(e => {
+      const byTime = PAD_TOP + (t0 - e.t) * PX_PER_DAY;
+      e.y = Math.max(prevY + MIN_GAP, byTime);
+      prevY = e.y;
+      e.x = spineX + e.lane * laneGap;
+      e.r = 4.5 + e.imp * 2.6;
+    });
+
+    contentH = ordered[ordered.length - 1].y + PAD_BOTTOM;
+    stage.style.height = contentH + "px";
+
+    nodeEls.forEach((el, id) => {
+      const e = byId[id];
+      el.style.left = e.x + "px";
+      el.style.top  = e.y + "px";
+      el.style.setProperty("--gap", (e.r + 14) + "px");
+      const orb = el.querySelector(".orb");
+      orb.style.width = orb.style.height = (e.r * 2) + "px";
+    });
+
+    buildAxis(t0);
+  }
+
+  // content-space y for an arbitrary day value, interpolated across the placed nodes
+  function yForDay(t) {
+    if (t >= ordered[0].t) return ordered[0].y - (t - ordered[0].t) * PX_PER_DAY;
+    for (let i = 1; i < ordered.length; i++) {
+      const a = ordered[i - 1], b = ordered[i];
+      if (t >= b.t) {
+        const f = (a.t - t) / Math.max(a.t - b.t, 1e-6);
+        return a.y + f * (b.y - a.y);
+      }
+    }
+    const last = ordered[ordered.length - 1];
+    return last.y + (last.t - t) * PX_PER_DAY;
+  }
+
+  function buildAxis(t0) {
+    stage.querySelectorAll(".tick").forEach(n => n.remove());
+    for (let d = Math.floor(t0); d >= 1; d--) {
+      const tick = document.createElement("div");
+      tick.className = "tick";
+      tick.style.top = yForDay(d) + "px";
+      tick.textContent = d + "d ago";
+      stage.appendChild(tick);
+    }
+    const now = document.createElement("div");
+    now.className = "tick now";
+    now.style.top = yForDay(0.15) + "px";
+    now.textContent = "PR opened";
+    stage.appendChild(now);
+  }
+
+  /* =====================================================================
+     4. NODES — build, drift, drag, spring home
+     ===================================================================== */
+
+  // per-node motion state: ox/oy is displacement from home, vx/vy its velocity
+  const motion = {};
+  EVENTS.forEach((e, i) => {
+    motion[e.id] = { ox: 0, oy: 0, vx: 0, vy: 0, seed: i * 1.7 + e.t };
+  });
+
+  function buildNodes() {
+    EVENTS.forEach(e => {
+      const src = SOURCES[e.src];
+      const btn = document.createElement("button");
+      btn.className = "node" + (e.imp <= 2 ? " minor" : "") + (e.pulse && !reduced ? " pulse" : "");
+      btn.type = "button";
+      btn.dataset.id = e.id;
+      btn.dataset.place = e.place;
+      btn.dataset.source = e.src;
+      if (e.pruned) btn.dataset.pruned = "1";
+      btn.style.setProperty("--c", e.pruned ? "#FF4D6D" : src.color);
+      btn.setAttribute("aria-label",
+        src.label + ", " + e.t + " days before the PR: " + e.short);
+      btn.innerHTML =
+        '<span class="orb" aria-hidden="true">' + SOURCE_LOGOS[e.src] + '</span>' +
+        '<span class="label"><span class="src">' + src.label + '</span>' +
+        '<span class="txt">' + e.short + '</span>' +
+        '<span class="when">' + e.t.toFixed(1) + 'd before PR</span></span>';
+
+      attachPointer(btn, e);
+      btn.addEventListener("mouseenter", () => setHover(e.id));
+      btn.addEventListener("mouseleave", () => setHover(null));
+      btn.addEventListener("focus", () => setHover(e.id));
+      btn.addEventListener("blur", () => setHover(null));
+
+      stage.appendChild(btn);
+      nodeEls.set(e.id, btn);
+    });
+  }
+
+  // Drag with a click/drag distinction: a pointer that barely moved is a click.
+  function attachPointer(btn, e) {
+    const m = motion[e.id];
+    let dragging = false, moved = 0, sx = 0, sy = 0, bx = 0, by = 0;
+
+    btn.addEventListener("pointerdown", ev => {
+      if (ev.button !== 0) return;
+      dragging = true; moved = 0;
+      sx = ev.clientX; sy = ev.clientY;
+      bx = m.ox; by = m.oy;
+      m.vx = m.vy = 0;
+      btn.setPointerCapture(ev.pointerId);
+      btn.classList.add("dragging");
+      ev.preventDefault();
+    });
+
+    btn.addEventListener("pointermove", ev => {
+      if (!dragging) return;
+      const dx = ev.clientX - sx, dy = ev.clientY - sy;
+      moved = Math.max(moved, Math.abs(dx) + Math.abs(dy));
+      m.ox = bx + dx;
+      m.oy = by + dy;
+    });
+
+    const release = ev => {
+      if (!dragging) return;
+      dragging = false;
+      btn.classList.remove("dragging");
+      try { btn.releasePointerCapture(ev.pointerId); } catch (_) {}
+      if (moved < 5) openRecord(e.id);      // treat as a click
+      else if (reduced) { m.ox = m.oy = 0; } // no spring for reduced motion
+    };
+    btn.addEventListener("pointerup", release);
+    btn.addEventListener("pointercancel", release);
+
+    // keyboard still opens the record
+    btn.addEventListener("keydown", ev => {
+      if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); openRecord(e.id); }
+    });
+  }
+
+  // Spring home + ambient drift. Stiffness is low and damping high enough that a
+  // released node settles in ~1s with one soft overshoot.
+  const K = 0.055, DAMP = 0.86;
+
+  function stepMotion(seconds) {
+    EVENTS.forEach(e => {
+      const m = motion[e.id];
+      const held = nodeEls.get(e.id).classList.contains("dragging");
+      if (!held && !reduced) {
+        m.vx = (m.vx + (0 - m.ox) * K) * DAMP;
+        m.vy = (m.vy + (0 - m.oy) * K) * DAMP;
+        m.ox += m.vx;
+        m.oy += m.vy;
+        if (Math.abs(m.ox) < 0.02 && Math.abs(m.vx) < 0.02) { m.ox = 0; m.vx = 0; }
+        if (Math.abs(m.oy) < 0.02 && Math.abs(m.vy) < 0.02) { m.oy = 0; m.vy = 0; }
+      }
+
+      // idle float — smaller nodes wander further, like a graph at rest
+      let fx = 0, fy = 0;
+      if (!reduced) {
+        const amp = 5.2 - e.imp * 0.55;
+        fx = Math.sin(seconds * 0.42 + m.seed) * amp;
+        fy = Math.cos(seconds * 0.33 + m.seed * 1.4) * amp * 0.8;
+      }
+
+      e.dx = m.ox + fx;
+      e.dy = m.oy + fy;
+      nodeEls.get(e.id).style.transform =
+        "translate(-50%, -50%) translate3d(" + e.dx.toFixed(2) + "px," + e.dy.toFixed(2) + "px,0)";
+    });
+  }
+
+  /* =====================================================================
+     5. THREADS — vertical curves, flow particles, sweep reveal
+     ===================================================================== */
+
+  function curve(a, b, scroll) {
+    const ax = a.x + a.dx, ay = a.y + a.dy - scroll;
+    const bx = b.x + b.dx, by = b.y + b.dy - scroll;
+    const dy = (by - ay) * 0.5;
+    return { x0: ax, y0: ay, x1: ax, y1: ay + dy, x2: bx, y2: by - dy, x3: bx, y3: by };
+  }
+
+  function pointOn(c, t) {
+    const mt = 1 - t, a = mt * mt * mt, b = 3 * mt * mt * t, c2 = 3 * mt * t * t, d = t * t * t;
+    return { x: a * c.x0 + b * c.x1 + c2 * c.x2 + d * c.x3,
+             y: a * c.y0 + b * c.y1 + c2 * c.y2 + d * c.y3 };
+  }
+
+  let cursorDay = reduced ? -1 : 8.4;
+  let sweeping  = !reduced;
+  let hoverId   = null;
+
+  const visible = e => cursorDay <= e.t && active.has(e.src);
+
+  function setHover(id) {
+    hoverId = id;
+    const near = id ? neighbours[id] : null;
+    nodeEls.forEach((el, nid) => {
+      el.classList.toggle("dim", !!near && !near.has(nid));
+    });
+  }
+
+  function drawThreads(seconds) {
+    const scroll = field.scrollTop;
+    tctx.clearRect(0, 0, W, H);
+    const cy = yForDay(cursorDay) - scroll;
+
+    EDGES.forEach(([from, to, ch]) => {
+      const a = byId[from], b = byId[to];
+      if (!active.has(a.src) && !active.has(b.src)) return;
+
+      const style = CHANNEL[ch];
+      const c = curve(a, b, scroll);
+
+      const ay = a.y + a.dy, by = b.y + b.dy;
+      let prog = (yForDay(cursorDay) - ay) / Math.max(by - ay, 1);
+      prog = Math.max(0, Math.min(1, prog));
+      if (prog <= 0.001) return;
+
+      let dim = (!active.has(a.src) || !active.has(b.src)) ? 0.18 : 1;
+      if (hoverId) dim *= (neighbours[hoverId].has(from) && neighbours[hoverId].has(to)) ? 1 : 0.18;
+
+      tctx.save();
+      tctx.lineCap = "round";
+      tctx.strokeStyle = style.color;
+      tctx.globalAlpha = style.alpha * dim;
+      tctx.lineWidth = style.width;
+      tctx.shadowColor = style.color;
+      tctx.shadowBlur = style.blur;
+      if (ch === "pruned") tctx.setLineDash([5, 7]);
+
+      tctx.beginPath();
+      const STEPS = 46;
+      for (let i = 0; i <= STEPS * prog; i++) {
+        const p = pointOn(c, i / STEPS);
+        i === 0 ? tctx.moveTo(p.x, p.y) : tctx.lineTo(p.x, p.y);
+      }
+      tctx.stroke();
+      tctx.restore();
+
+      if (!reduced && prog > 0.999 && ch !== "pruned") {
+        const speed = ch === "spine" ? 0.13 : 0.09;
+        const phase = (seconds * speed + from.length * 0.17) % 1;
+        for (const off of [0, 0.5]) {
+          const p = pointOn(c, (phase + off) % 1);
+          tctx.save();
+          tctx.globalAlpha = 0.85 * dim;
+          tctx.fillStyle = style.color;
+          tctx.shadowColor = style.color;
+          tctx.shadowBlur = 14;
+          tctx.beginPath();
+          tctx.arc(p.x, p.y, ch === "spine" ? 2.2 : 1.7, 0, Math.PI * 2);
+          tctx.fill();
+          tctx.restore();
+        }
+      }
+    });
+
+    if (sweeping) {
+      const grad = tctx.createLinearGradient(0, cy - 110, 0, cy);
+      grad.addColorStop(0, "rgba(168,123,255,0)");
+      grad.addColorStop(1, "rgba(168,123,255,.5)");
+      tctx.fillStyle = grad;
+      tctx.fillRect(0, cy - 110, W, 110);
+      tctx.save();
+      tctx.strokeStyle = "rgba(210,190,255,.9)";
+      tctx.lineWidth = 1;
+      tctx.shadowColor = "#A87BFF";
+      tctx.shadowBlur = 22;
+      tctx.beginPath();
+      tctx.moveTo(0, cy); tctx.lineTo(W, cy);
+      tctx.stroke();
+      tctx.restore();
+    }
+  }
+
+  /* =====================================================================
+     6. SOURCE FILTERS
+     ===================================================================== */
+
+  const active = new Set(Object.keys(SOURCES));
+  const legend = document.getElementById("legend");
+
+  Object.entries(SOURCES).forEach(([key, s]) => {
+    const chip = document.createElement("button");
+    chip.className = "chip";
+    chip.type = "button";
+    chip.setAttribute("aria-pressed", "true");
+    chip.style.setProperty("--c", s.color);
+    chip.innerHTML = SOURCE_LOGOS[key] + s.label;
+    chip.addEventListener("click", () => {
+      active.has(key) ? active.delete(key) : active.add(key);
+      chip.setAttribute("aria-pressed", String(active.has(key)));
+      syncNodes();
+    });
+    legend.appendChild(chip);
+  });
+
+  function syncNodes() {
+    let shown = 0;
+    EVENTS.forEach(e => {
+      const on = visible(e);
+      nodeEls.get(e.id).classList.toggle("lit", on);
+      if (on) shown++;
+    });
+    const available = EVENTS.filter(e => active.has(e.src)).length;
+    document.getElementById("evCount").textContent = available;
+    document.getElementById("meterFill").style.transform =
+      "scaleX(" + (available ? shown / available : 0) + ")";
+    const pruneTotal = EVENTS.filter(e => e.pruned && active.has(e.src)).length;
+    document.getElementById("prunedCount").textContent =
+      pruneTotal + (pruneTotal === 1 ? " pruned timeline" : " pruned timelines");
+  }
+
+  /* =====================================================================
+     7. DRAWER
+     ===================================================================== */
+
+  const drawer = document.getElementById("drawer");
+  const hint   = document.getElementById("hint");
+  let openId = null;
+
+  function escapeHtml(value) {
+    return value.replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+  }
+
+  function transcriptMessages(excerpt) {
+    const temp = document.createElement("div");
+    temp.innerHTML = excerpt.replace(/<br\s*\/?>/gi, "\n");
+    const lines = temp.textContent.split("\n");
+    const messages = [];
+    lines.forEach(raw => {
+      const line = raw.trim();
+      if (!line) return;
+      const match = line.match(/^([a-z]+)(?::|\s{2,})\s*(.*)$/i);
+      if (match) messages.push({ who: match[1].toLowerCase(), text: match[2] });
+      else if (messages.length) messages[messages.length - 1].text += "\n" + line;
+      else messages.push({ who: "record", text: line });
+    });
+    return messages;
+  }
+
+  function sourceShot(e) {
+    const messages = transcriptMessages(e.excerpt);
+    if (e.src === "slack") {
+      const channel = (e.stamp.match(/#[\w-]+/) || ["#team-platform"])[0];
+      const rows = messages.map((m, i) => {
+        const display = { maya: "Maya Chen", johnny: "Johnny Park", elena: "Elena Ruiz", record: "System" }[m.who] || m.who;
+        const initials = display.split(/\s+/).map(part => part[0]).join("").slice(0, 2).toUpperCase();
+        return `<div class="slack-message"><span class="avatar">${initials}</span><div><div class="msg-meta"><b>${escapeHtml(display)}</b><time>${i ? "2 min later" : "10:42 AM"}</time></div><div class="msg-copy">${escapeHtml(m.text)}</div></div></div>`;
+      }).join("");
+      return `<div class="source-shot slack-shot" role="img" aria-label="Reconstructed Slack conversation"><div class="shot-bar">${SOURCE_LOGOS.slack}<span>Slack</span><small>captured by Temporal</small></div><div class="channel">${channel}</div>${rows}<div class="shot-caption">Source reconstruction · message content preserved from the recovered record</div></div>`;
+    }
+    if (e.src === "claude") {
+      const rows = messages.map(m => {
+        const assistant = m.who === "claude" || m.who === "assistant";
+        return `<div class="claude-bubble ${assistant ? "assistant" : "user"}"><span class="speaker">${assistant ? "Claude" : "Johnny"}</span>${escapeHtml(m.text)}</div>`;
+      }).join("");
+      return `<div class="source-shot claude-shot" role="img" aria-label="Reconstructed Claude Code conversation"><div class="shot-bar">${SOURCE_LOGOS.claude}<span>Claude Code</span><small>${escapeHtml(e.stamp.split("·")[1] || "session")}</small></div><div class="claude-thread">${rows}</div><div class="shot-caption">Recovered local session · conversation content preserved verbatim</div></div>`;
+    }
+    return '<pre class="excerpt">' + e.excerpt + '</pre>';
+  }
+
+  function openRecord(id) {
+    const e = byId[id];
+    const src = SOURCES[e.src];
+    const c = e.pruned ? "#FF4D6D" : src.color;
+
+    nodeEls.forEach(el => el.classList.remove("active"));
+    nodeEls.get(id).classList.add("active");
+
+    document.getElementById("dBadge").style.setProperty("--c", c);
+    document.getElementById("dSrc").textContent = src.label + (e.pruned ? " · pruned" : "");
+    document.getElementById("dTitle").textContent = e.title;
+    document.getElementById("dStamp").innerHTML =
+      '<b>' + e.t.toFixed(1) + ' days before PR</b> &nbsp;·&nbsp; ' + e.stamp;
+
+    const body = document.getElementById("dBody");
+    body.innerHTML = "";
+    body.style.setProperty("--c", c);
+    body.appendChild(block("Why this matters to QA", '<p>' + e.why + '</p>'));
+    body.appendChild(block(e.src === "slack" || e.src === "claude" ? "Recovered conversation" : "Source record", sourceShot(e)));
+    if (e.drift) {
+      const d = document.createElement("div");
+      d.className = "block drift";
+      d.innerHTML = '<span class="eyebrow">Documentation drift</span>' + e.drift;
+      body.appendChild(d);
+    }
+    if (e.tests && e.tests.length) {
+      body.appendChild(block("What to verify",
+        '<ul class="tests">' + e.tests.map(t => '<li>' + t + '</li>').join("") + '</ul>'));
+    }
+
+    drawer.classList.add("open");
+    drawer.setAttribute("aria-hidden", "false");
+    hint.style.opacity = "0";
+    openId = id;
+
+    // bring the node into view if the drawer would cover or the node sits offscreen
+    const top = e.y - field.scrollTop;
+    if (top < 170 || top > H - 150) {
+      field.scrollTo({ top: e.y - H * 0.45, behavior: reduced ? "auto" : "smooth" });
+    }
+    document.getElementById("dClose").focus();
+  }
+
+  function block(label, html) {
+    const el = document.createElement("div");
+    el.className = "block";
+    el.innerHTML = '<span class="eyebrow">' + label + '</span>' + html;
+    return el;
+  }
+
+  function closeRecord() {
+    drawer.classList.remove("open");
+    drawer.setAttribute("aria-hidden", "true");
+    nodeEls.forEach(el => el.classList.remove("active"));
+    hint.style.opacity = "1";
+    if (openId) nodeEls.get(openId).focus();
+    openId = null;
+  }
+
+  document.getElementById("dClose").addEventListener("click", closeRecord);
+  window.addEventListener("keydown", e => { if (e.key === "Escape") closeRecord(); });
+
+  /* =====================================================================
+     8. RUN
+     ===================================================================== */
+
+  function startSweep() {
+    closeRecord();
+    if (reduced) { cursorDay = -1; sweeping = false; syncNodes(); return; }
+    field.scrollTo({ top: 0, behavior: "auto" });
+    cursorDay = 8.4;
+    sweeping = true;
+  }
+  document.getElementById("replay").addEventListener("click", startSweep);
+
+  buildNodes();
+  layout();
+  syncNodes();
+
+  let last = 0;
+  function frame(ms) {
+    const seconds = ms / 1000;
+    const dt = last ? Math.min((ms - last) / 1000, 0.05) : 0;
+    last = ms;
+
+    if (sweeping) {
+      cursorDay -= dt * 1.55;                        // ~5.5s from day 7 to the PR
+      if (cursorDay <= -0.5) { cursorDay = -0.5; sweeping = false; }
+      syncNodes();
+      // the field follows the sweep down through the week
+      const want = yForDay(cursorDay) - H * 0.55;
+      field.scrollTop = Math.max(0, Math.min(want, contentH - H));
+    }
+
+    stepMotion(seconds);
+    if (nebula.live) nebula.draw(seconds);
+    drawThreads(seconds);
+    requestAnimationFrame(frame);
+  }
+
+  if (reduced) {
+    stepMotion(0);
+    drawThreads(0);
+  } else {
+    requestAnimationFrame(frame);
+  }
+
+  field.addEventListener("scroll", () => { if (reduced) drawThreads(0); }, { passive: true });
+
+  let rt;
+  window.addEventListener("resize", () => {
+    clearTimeout(rt);
+    rt = setTimeout(() => {
+      layout();
+      nebula.resize();
+      if (reduced) { nebula.draw(12); stepMotion(0); drawThreads(0); }
+    }, 120);
+  });
+})();
+</script>
