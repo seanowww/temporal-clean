@@ -14,6 +14,8 @@ The Pages URL is derived from GitHub's repository metadata and the pull-request 
 
 Before the first public-repository run, create a `gh-pages` branch, then open **Settings → Pages**, select **Deploy from a branch**, and choose `gh-pages` at `/ (root)`. This is a one-time repository setting. Later runs update only that PR's `pr-<number>.html`, so links for other PRs remain intact. GitHub Pages is a public publishing surface: only enable it when the committed evidence is safe for anyone on the internet to read.
 
+The publisher waits for the exact `gh-pages` commit to finish building and verifies that its public URL returns successfully before exposing the link in the PR comment. Reviewers therefore never receive the temporary Pages 404 that can occur immediately after a push.
+
 Private repositories deliberately skip Pages and retain the protected artifact link. This prevents source evidence from becoming public accidentally and accommodates plans where private-repository Pages is unavailable.
 
 The workflow currently ships with the Temporal repository and executes its local scripts. New users can test it in a fork or copy of Temporal. Installing it into an unrelated repository will require a separately packaged Action or reusable tool release; copying only the YAML file is not sufficient today.
