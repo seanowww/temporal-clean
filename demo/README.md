@@ -1,60 +1,46 @@
-# Demo evidence
+# WL-12 demo: the missing context behind a three-field form
 
-**These are prepared fixtures, not live captures.** They exist because Slack and the
-agent-session collector are not connected to a live workspace for the hackathon demo.
+This prepared scenario matches the live [Temporal demo PR](https://github.com/seanowww/temporal-clean/pull/7).
+The PR is intentionally ordinary: its final diff adds a whitelist form with only Name,
+Organization, and Email. Temporal recovers why Phone Number and Picture of Face disappeared.
 
-Everything else in the golden path is real: the repository, the pull request, its
-commits, the webhook delivery, the traversal, and the bot comment.
+The timeline follows this exact sequence:
 
-Each record here is authored to match the actual commit history of the
-`johnny/waitlist-signup` golden PR. The ticket starts with five fields; the final
-diff contains three. Jira, Slack, Claude Code, and GitHub explain both removals:
+1. The WL-12 product requirement asks for Name, Organization, Email, Phone Number, and Picture of Face.
+2. The PM removes Phone Number in Slack after privacy and legal review.
+3. Johnny confirms the scope change.
+4. Claude reviews the Supabase setup and finds no ready private photo-storage path.
+5. A senior SWE defers the picture and S3-compatible storage work.
+6. The Git history shows the implementation arriving at the approved three fields.
 
-1. Product removes phone number after a privacy review.
-2. Claude identifies that the project has no provisioned private upload path.
-3. Senior engineering defers profile photos until the storage controls are ready.
+The Jira, Slack, and Claude records are prepared reference fixtures rather than captures
+from a live company workspace. They are deliberately labelled and contain no private data.
+The repository, branch, commits, PR event, traversal, bot comment, and generated HTML are real.
 
-The reconstructed timeline is faithful to what the diff did; the Jira, Slack, and
-Claude records are supplied by hand instead of pulled from live workspaces.
+## Show it on GitHub
 
-Load them with:
+1. Open [PR #7](https://github.com/seanowww/temporal-clean/pull/7).
+2. Show the final diff: only Name, Organization, and Email remain.
+3. Find the `github-actions[bot]` comment headed **Temporal timeline**.
+4. Point out the requirement, privacy decision, Claude finding, and senior approval inline.
+5. Follow **Download the interactive timeline from this workflow run**.
+6. Download `temporal-pr-7`, unzip it, and open `pr-7.html` locally.
+7. Select the evidence nodes in chronological order to show the source-native references.
+
+The workflow artifact is private to repository readers and retained for 30 days. It does
+not depend on a local server, Cloudflare tunnel, or GitHub Pages deployment. A new push to
+the PR rebuilds the HTML and updates the existing bot comment in place.
+
+## Recreate the prepared local reference
+
+The older source-shaped fixtures remain useful when demonstrating the local console:
 
 ```bash
+npm install
 npm run demo:prepare
-```
-
-To create self-contained HTML snapshots that do not need the Temporal server, run:
-
-```bash
 npm run demo:export-static
 ```
 
-This writes `pr-1.html` and `pr-2.html` to `demo/static-artifacts`. Pass an output
-directory and optional PR ids after `--` when publishing them elsewhere.
-Set `TEMPORAL_STATIC_ARTIFACT_BASE_URL` to their published directory URL so later
-webhooks keep GitHub comments and checks on the static snapshots.
-
-`static-artifact-policy.json` records any stable evidence ids excluded from a
-snapshot after source verification. Exclusions are applied only to the published
-demo and logged during export; the provenance store remains unchanged and auditable.
-
-This imports all three prepared sources, assembles `pr-2`, updates the single bot
-comment, creates the check, and creates or refreshes the GitHub Deployment.
-
-## Stage runbook
-
-Before presenting:
-
-1. Keep the Next.js server and public tunnel running.
-2. Confirm the GitHub App has Deployments, Checks, and Pull requests set to read/write.
-3. Run `npm run demo:prepare` and require every delivery to report `delivered: true`.
-4. Open `https://github.com/seanowww/temporal-golden-demo/pull/2`.
-
-During the demo:
-
-1. Show that the final diff stores only Name, Organization, and Email.
-2. Point out that WL-12 originally required Phone Number and Profile Photo.
-3. Use the Temporal deployment or the bot's **View timeline** link.
-4. Select, in order: Jira ticket, PM privacy decision, Claude storage finding,
-   senior engineering approval, and the final Git commits.
-5. End on the PR node: QA can verify the three-field scope without messaging Johnny.
+The static export writes self-contained reference HTML files under `demo/static-artifacts`.
+They use the same artifact renderer as the GitHub Actions download, but are local-only and
+do not prove that the PR workflow ran.
