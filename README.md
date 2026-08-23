@@ -2,19 +2,41 @@
 
 Temporal builds evidence-backed timelines for pull request review from a permission-aware provenance graph.
 
-## GitHub Actions quick start
+## Try Temporal on a pull request
 
-The reviewer-facing product runs in GitHub Actions: no tunnel, GitHub Pages deployment, GitHub App, or hosted Temporal backend is required. Opening or updating a PR builds a deterministic timeline, updates one durable PR comment, and uploads the complete interactive HTML as a repository-protected workflow artifact.
+The reviewer-facing product runs in GitHub Actions: no tunnel, GitHub Pages deployment, GitHub App, hosted backend, environment file, or API key is required.
 
-The workflow works immediately with GitHub PR context. To include locally collected Claude, Codex, Slack, Jira, or Notion evidence, export an explicit sanitized snapshot:
+1. Fork or copy this repository into an account where you can run Actions. If GitHub shows **Workflows aren't being run on this forked repository**, open the **Actions** tab and select **I understand my workflows, go ahead and enable them**.
+2. Create a branch, make any small change, push it, and open a pull request against `main` in that same repository.
+3. Wait for **Temporal / Build PR timeline**. A clean run currently takes about 30 seconds.
+4. Read the `github-actions[bot]` comment. Open the linked workflow run, scroll to **Artifacts**, and download `temporal-pr-<number>`.
+5. Unzip it and open `pr-<number>.html` in a browser. The HTML is self-contained and remains usable offline.
+
+The artifact is visible only to signed-in users with repository read access and is retained for 30 days by the workflow. Fork-originated PRs into somebody else's repository still receive the Check and artifact, but GitHub's read-only fork token prevents the comment; see [fork behavior](docs/GITHUB_ACTIONS.md#fork-pull-requests).
+
+> **Current distribution boundary:** the workflow uses Temporal's scripts from this repository. It is ready for dogfooding in a fork or copy of Temporal, but it is not yet packaged as a one-file Action for unrelated repositories.
+
+## Add local Claude, Slack, and planning evidence
+
+The workflow works immediately with GitHub PR context. To include locally collected Claude, Codex, Slack, Jira, or Notion evidence, first run the local console and import or sync records:
+
+```bash
+npm install
+npm run dev
+```
+
+Open [http://localhost:3000/connections](http://localhost:3000/connections). No `.env.local` is required for file imports. The seeded example is visible on the dashboard; its ready interactive artifact is [http://localhost:3000/artifact/index.html?artifact=pr-4471](http://localhost:3000/artifact/index.html?artifact=pr-4471).
+
+Then export only evidence explicitly scoped to the repository:
 
 ```bash
 npm run temporal:export -- --repo owner/repository
 npm run temporal:export -- --repo owner/repository --yes
+git add -N .temporal/evidence
 git diff -- .temporal/evidence
 ```
 
-The first command is a dry run; `--yes` writes the snapshot. Review it before committing. See **[`docs/GITHUB_ACTIONS.md`](docs/GITHUB_ACTIONS.md)** for the security boundary, artifact retention, and fork behavior.
+The first command is a dry run; `--yes` writes the snapshot. `git add -N` makes new files visible to `git diff` without staging their contents. Review every exported record before committing and pushing it. That push reruns Temporal and updates the existing PR comment. See **[`docs/GITHUB_ACTIONS.md`](docs/GITHUB_ACTIONS.md)** for the security boundary and data lifecycle.
 
 ## Run locally
 
@@ -23,7 +45,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`. The first run seeds a synthetic PR so the complete artifact path is immediately testable.
+Open `http://localhost:3000`. The first run seeds a synthetic PR; select the ready PR on the dashboard or open `http://localhost:3000/artifact/index.html?artifact=pr-4471` directly.
 
 Use `http://localhost:3000/connections` to connect a source, sync an authenticated API, or upload/paste a JSON, JSONL, Markdown, or text export. Set `TEMPORAL_SEED_DEMO=false` for a clean workspace; production does not seed demo data unless explicitly enabled.
 
@@ -45,7 +67,7 @@ Required for GitHub App repository access — in local development the **Create 
 - `GITHUB_APP_PRIVATE_KEY` with escaped newlines, or `GITHUB_APP_PRIVATE_KEY_BASE64`
 - `GITHUB_WEBHOOK_SECRET`
 
-Always required: `TEMPORAL_APP_URL`, for artifact links and the Manifest flow's callback URL.
+Required only for the legacy GitHub App webhook mode: `TEMPORAL_APP_URL`, for artifact links and the Manifest flow's callback URL.
 
 For the legacy GitHub App demo, `TEMPORAL_STATIC_ARTIFACT_BASE_URL` can point GitHub comments,
 checks, and deployments at self-contained `<pull-request-id>.html` snapshots instead

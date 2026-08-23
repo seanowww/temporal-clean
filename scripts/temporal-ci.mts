@@ -51,14 +51,38 @@ const ingested = ingestGitHubWebhook(deliveryId, "pull_request", payload);
 if (ingested.duplicate) throw new Error("Temporal CI event was unexpectedly treated as a duplicate");
 const pullRequestId = (ingested.result as { pullRequestId?: string }).pullRequestId;
 if (!pullRequestId) throw new Error("Temporal could not create the pull request anchor");
+const pullRequestNodeId = (ingested.result as { nodeId?: string }).nodeId;
 
 let changedFiles: string[] = [];
+let commits: Array<{ sha: string; author: string; occurredAt: string; subject: string }> = [];
 try {
   const baseSha = payload.pull_request.base?.sha;
   const headSha = payload.pull_request.head?.sha;
-  if (baseSha && headSha) changedFiles = execFileSync("git", ["diff", "--name-only", baseSha, headSha], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).split(/\r?\n/).filter(Boolean);
+  if (baseSha && headSha) {
+    changedFiles = execFileSync("git", ["diff", "--name-only", baseSha, headSha], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).split(/\r?\n/).filter(Boolean);
+    commits = execFileSync("git", ["log", "--format=%H%x1f%an%x1f%aI%x1f%s", `${baseSha}..${headSha}`], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] })
+      .split(/\r?\n/).filter(Boolean).map((line) => {
+        const [sha, author, occurredAt, subject] = line.split("\x1f");
+        return { sha, author, occurredAt, subject };
+      });
+  }
 } catch {
   // The deterministic traversal still has repository, branch, ticket, and commit signals.
+}
+
+const storedPullRequest = store.getPullRequest(pullRequestId);
+if (storedPullRequest) store.upsertPullRequest({
+  ...storedPullRequest,
+  metadata: { ...storedPullRequest.metadata, filePaths: changedFiles, commitCount: commits.length, backfilledAt: new Date().toISOString(), backfillSource: "git" },
+});
+for (const commit of commits) {
+  const nodeId = store.upsertGraphNode({
+    type: "commit", source: "github", sourceId: `${payload.repository.full_name}@${commit.sha}`,
+    title: commit.subject || "Commit", content: commit.subject || "", occurredAt: commit.occurredAt,
+    actorId: commit.author, repository: payload.repository.full_name, branch: payload.pull_request.head.ref,
+    commitSha: commit.sha, metadata: { filesModified: changedFiles },
+  });
+  if (pullRequestNodeId) store.upsertGraphEdge({ fromNodeId: pullRequestNodeId, toNodeId: nodeId, type: "CONTAINS", confidence: 1 });
 }
 
 const artifact = await assembleArtifact(pullRequestId, { useAi: false, filePaths: changedFiles });

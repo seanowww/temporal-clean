@@ -12,6 +12,8 @@ Opening or updating a pull request runs `.github/workflows/temporal.yml`. The jo
 
 The artifact is retained for 30 days by this workflow and can be downloaded only by people with repository read access. No GitHub Pages site, inbound webhook, tunnel, GitHub App, or service secret is required.
 
+The workflow currently ships with the Temporal repository and executes its local scripts. New users can test it in a fork or copy of Temporal. Installing it into an unrelated repository will require a separately packaged Action or reusable tool release; copying only the YAML file is not sufficient today.
+
 ## Local evidence
 
 The local dashboard and connectors continue to write `data/temporal.db`. That database is never uploaded. Export an intentional snapshot after reviewing the dry-run counts:
@@ -21,6 +23,8 @@ npm run temporal:export -- --repo owner/repository
 npm run temporal:export -- --repo owner/repository --yes
 git diff -- .temporal/evidence
 ```
+
+When the evidence files are new, run `git add -N .temporal/evidence` before `git diff`; intent-to-add makes their contents reviewable without staging them.
 
 Commit the snapshot when its contents are appropriate for every collaborator who can read the repository. Later workflow runs rebuild their graph from that immutable source evidence.
 

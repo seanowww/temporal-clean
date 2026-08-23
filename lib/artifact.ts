@@ -123,7 +123,7 @@ function buildSummaryFallback(events: ArtifactEvent[]) {
   const linkedIssue = events.find((event) => event.src === "jira");
   if (linkedIssue) return linkedIssue.title;
   const consequential = events.filter((event) => Number(event.imp) >= 4 && event.src !== "git").slice(0, 3);
-  if (!consequential.length) return `${events.length} evidence records recovered from the PR development window.`;
+  if (!consequential.length) return `${events.length} evidence ${events.length === 1 ? "record" : "records"} recovered from the PR development window.`;
   return consequential.map((event) => event.title).join(" · ");
 }
 
