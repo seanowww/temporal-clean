@@ -1,0 +1,13 @@
+.env*
+!.env.example
+.next/
+node_modules/
+*.log
+*.tsbuildinfo
+.DS_Store
+.impeccable/review/
+.impeccable/config.local.json
+.impeccable/hook.cache.json
+data/*.db*
+.claude/*
+!.claude/settings.json
