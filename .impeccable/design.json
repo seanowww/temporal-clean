@@ -1,0 +1,298 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-22T16:05:31Z",
+  "title": "Design System: Temporal",
+  "extensions": {
+    "colorMeta": {
+      "void": {
+        "role": "neutral",
+        "displayName": "Operational Void",
+        "canonical": "#06060f",
+        "tonalRamp": ["oklch(15% 0.025 287)", "oklch(25% 0.025 287)", "oklch(35% 0.025 287)", "oklch(47% 0.025 287)", "oklch(59% 0.025 287)", "oklch(71% 0.025 287)", "oklch(83% 0.025 287)", "oklch(95% 0.025 287)"]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Deep Console Surface",
+        "canonical": "#0b0918",
+        "tonalRamp": ["oklch(15% 0.035 291)", "oklch(25% 0.035 291)", "oklch(35% 0.035 291)", "oklch(47% 0.035 291)", "oklch(59% 0.035 291)", "oklch(71% 0.035 291)", "oklch(83% 0.035 291)", "oklch(95% 0.035 291)"]
+      },
+      "surface-raised": {
+        "role": "neutral",
+        "displayName": "Raised Console Surface",
+        "canonical": "#100d21",
+        "tonalRamp": ["oklch(15% 0.045 291)", "oklch(25% 0.045 291)", "oklch(35% 0.045 291)", "oklch(47% 0.045 291)", "oklch(59% 0.045 291)", "oklch(71% 0.045 291)", "oklch(83% 0.045 291)", "oklch(95% 0.045 291)"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Primary Ink",
+        "canonical": "#e9e6f7",
+        "tonalRamp": ["oklch(15% 0.025 292)", "oklch(25% 0.025 292)", "oklch(35% 0.025 292)", "oklch(47% 0.025 292)", "oklch(59% 0.025 292)", "oklch(71% 0.025 292)", "oklch(83% 0.025 292)", "oklch(95% 0.025 292)"]
+      },
+      "ink-dim": {
+        "role": "neutral",
+        "displayName": "Dim Ink",
+        "canonical": "#a49dc0",
+        "tonalRamp": ["oklch(15% 0.04 292)", "oklch(25% 0.04 292)", "oklch(35% 0.04 292)", "oklch(47% 0.04 292)", "oklch(59% 0.04 292)", "oklch(71% 0.04 292)", "oklch(83% 0.04 292)", "oklch(95% 0.04 292)"]
+      },
+      "ink-faint": {
+        "role": "neutral",
+        "displayName": "Faint Ink",
+        "canonical": "#817a98",
+        "tonalRamp": ["oklch(15% 0.04 292)", "oklch(25% 0.04 292)", "oklch(35% 0.04 292)", "oklch(47% 0.04 292)", "oklch(59% 0.04 292)", "oklch(71% 0.04 292)", "oklch(83% 0.04 292)", "oklch(95% 0.04 292)"]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Structural Line",
+        "canonical": "rgba(155, 145, 210, 0.16)",
+        "tonalRamp": ["oklch(15% 0.045 292 / 0.16)", "oklch(25% 0.045 292 / 0.16)", "oklch(35% 0.045 292 / 0.16)", "oklch(47% 0.045 292 / 0.16)", "oklch(59% 0.045 292 / 0.16)", "oklch(71% 0.045 292 / 0.16)", "oklch(83% 0.045 292 / 0.16)", "oklch(95% 0.045 292 / 0.16)"]
+      },
+      "line-bright": {
+        "role": "neutral",
+        "displayName": "Bright Structural Line",
+        "canonical": "rgba(155, 145, 210, 0.28)",
+        "tonalRamp": ["oklch(15% 0.045 292 / 0.28)", "oklch(25% 0.045 292 / 0.28)", "oklch(35% 0.045 292 / 0.28)", "oklch(47% 0.045 292 / 0.28)", "oklch(59% 0.045 292 / 0.28)", "oklch(71% 0.045 292 / 0.28)", "oklch(83% 0.045 292 / 0.28)", "oklch(95% 0.045 292 / 0.28)"]
+      },
+      "path-gold": {
+        "role": "primary",
+        "displayName": "Sacred Path Gold",
+        "canonical": "#e8b84b",
+        "tonalRamp": ["oklch(15% 0.14 82)", "oklch(25% 0.14 82)", "oklch(35% 0.14 82)", "oklch(47% 0.14 82)", "oklch(59% 0.14 82)", "oklch(71% 0.14 82)", "oklch(83% 0.14 82)", "oklch(95% 0.14 82)"]
+      },
+      "evidence-cyan": {
+        "role": "secondary",
+        "displayName": "Evidence Cyan",
+        "canonical": "#4de3e8",
+        "tonalRamp": ["oklch(15% 0.12 196)", "oklch(25% 0.12 196)", "oklch(35% 0.12 196)", "oklch(47% 0.12 196)", "oklch(59% 0.12 196)", "oklch(71% 0.12 196)", "oklch(83% 0.12 196)", "oklch(95% 0.12 196)"]
+      },
+      "agent-violet": {
+        "role": "secondary",
+        "displayName": "Agent Violet",
+        "canonical": "#a87bff",
+        "tonalRamp": ["oklch(15% 0.18 299)", "oklch(25% 0.18 299)", "oklch(35% 0.18 299)", "oklch(47% 0.18 299)", "oklch(59% 0.18 299)", "oklch(71% 0.18 299)", "oklch(83% 0.18 299)", "oklch(95% 0.18 299)"]
+      },
+      "pruned-red": {
+        "role": "tertiary",
+        "displayName": "Pruned Branch Red",
+        "canonical": "#ff4d6d",
+        "tonalRamp": ["oklch(15% 0.2 20)", "oklch(25% 0.2 20)", "oklch(35% 0.2 20)", "oklch(47% 0.2 20)", "oklch(59% 0.2 20)", "oklch(71% 0.2 20)", "oklch(83% 0.2 20)", "oklch(95% 0.2 20)"]
+      },
+      "ready-green": {
+        "role": "tertiary",
+        "displayName": "Ready Green",
+        "canonical": "#5ee6a8",
+        "tonalRamp": ["oklch(15% 0.14 158)", "oklch(25% 0.14 158)", "oklch(35% 0.14 158)", "oklch(47% 0.14 158)", "oklch(59% 0.14 158)", "oklch(71% 0.14 158)", "oklch(83% 0.14 158)", "oklch(95% 0.14 158)"]
+      },
+      "path-rose": {
+        "role": "tertiary",
+        "displayName": "Path Rose",
+        "canonical": "#ff6b8a",
+        "tonalRamp": ["oklch(15% 0.18 15)", "oklch(25% 0.18 15)", "oklch(35% 0.18 15)", "oklch(47% 0.18 15)", "oklch(59% 0.18 15)", "oklch(71% 0.18 15)", "oklch(83% 0.18 15)", "oklch(95% 0.18 15)"]
+      },
+      "github-accent": {
+        "role": "secondary",
+        "displayName": "GitHub Accent",
+        "canonical": "#f2f0f7",
+        "tonalRamp": ["oklch(15% 0.02 292)", "oklch(25% 0.02 292)", "oklch(35% 0.02 292)", "oklch(47% 0.02 292)", "oklch(59% 0.02 292)", "oklch(71% 0.02 292)", "oklch(83% 0.02 292)", "oklch(95% 0.02 292)"]
+      },
+      "slack-accent": {
+        "role": "secondary",
+        "displayName": "Slack Accent",
+        "canonical": "#36c5f0",
+        "tonalRamp": ["oklch(15% 0.13 220)", "oklch(25% 0.13 220)", "oklch(35% 0.13 220)", "oklch(47% 0.13 220)", "oklch(59% 0.13 220)", "oklch(71% 0.13 220)", "oklch(83% 0.13 220)", "oklch(95% 0.13 220)"]
+      },
+      "jira-accent": {
+        "role": "secondary",
+        "displayName": "Jira Accent",
+        "canonical": "#2684ff",
+        "tonalRamp": ["oklch(15% 0.18 255)", "oklch(25% 0.18 255)", "oklch(35% 0.18 255)", "oklch(47% 0.18 255)", "oklch(59% 0.18 255)", "oklch(71% 0.18 255)", "oklch(83% 0.18 255)", "oklch(95% 0.18 255)"]
+      },
+      "notion-accent": {
+        "role": "secondary",
+        "displayName": "Notion Accent",
+        "canonical": "#e9e6f7",
+        "tonalRamp": ["oklch(15% 0.025 292)", "oklch(25% 0.025 292)", "oklch(35% 0.025 292)", "oklch(47% 0.025 292)", "oklch(59% 0.025 292)", "oklch(71% 0.025 292)", "oklch(83% 0.025 292)", "oklch(95% 0.025 292)"]
+      },
+      "claude-accent": {
+        "role": "secondary",
+        "displayName": "Claude Accent",
+        "canonical": "#d97757",
+        "tonalRamp": ["oklch(15% 0.13 42)", "oklch(25% 0.13 42)", "oklch(35% 0.13 42)", "oklch(47% 0.13 42)", "oklch(59% 0.13 42)", "oklch(71% 0.13 42)", "oklch(83% 0.13 42)", "oklch(95% 0.13 42)"]
+      },
+      "codex-accent": {
+        "role": "secondary",
+        "displayName": "Codex Accent",
+        "canonical": "#a87bff",
+        "tonalRamp": ["oklch(15% 0.18 299)", "oklch(25% 0.18 299)", "oklch(35% 0.18 299)", "oklch(47% 0.18 299)", "oklch(59% 0.18 299)", "oklch(71% 0.18 299)", "oklch(83% 0.18 299)", "oklch(95% 0.18 299)"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Artifact Display", "purpose": "Artifact identity and the strongest brand readout." },
+      "headline": { "displayName": "Operational Headline", "purpose": "Dashboard mastheads and primary operational titles." },
+      "title": { "displayName": "Section Title", "purpose": "Section and evidence-drawer headings." },
+      "body": { "displayName": "Interface Body", "purpose": "PR titles, descriptions, and evidence explanation." },
+      "label": { "displayName": "Provenance Label", "purpose": "Identifiers, status, source, time, scope, and system metadata." },
+      "connector-title": { "displayName": "Connector Title", "purpose": "Repeated source names in the connector logo-card catalog." },
+      "micro-label": { "displayName": "Connector Micro Label", "purpose": "Connector modes, field labels, state, and setup metadata." }
+    },
+    "shadows": [
+      { "name": "signal-glow", "value": "0 2px 8px currentColor", "purpose": "Small status dots that communicate live semantic state." },
+      { "name": "selected-path-glow", "value": "drop-shadow(0 2px 5px var(--selection))", "purpose": "Illuminates only the graph edges belonging to the selected PR." },
+      { "name": "selection-dock-lift", "value": "0 16px 52px rgba(0, 0, 0, 0.38), 0 5px 22px color-mix(in srgb, var(--selection) 13%, transparent)", "purpose": "Keeps the contextual artifact action legible above the constellation." },
+      { "name": "pr-overlay-separation", "value": "-28px 0 70px rgba(0, 0, 0, 0.45)", "purpose": "Separates the mobile PR overlay from the graph field." },
+      { "name": "dragged-node-lift", "value": "0 7px 22px color-mix(in srgb, var(--node-color) 58%, transparent), 0 18px 48px rgba(0, 0, 0, 0.42)", "purpose": "Raises only the dashboard node under direct manipulation; the .42 black shadow is intentional physical separation paired with semantic-color glow." },
+      { "name": "evidence-node-halo", "value": "0 0 14px var(--c), 0 0 38px color-mix(in srgb, var(--c) 55%, transparent)", "purpose": "Source-channel energy around artifact graph records." },
+      { "name": "drawer-separation", "value": "-40px 0 90px rgba(0, 0, 0, 0.55)", "purpose": "Separates the evidence drawer from the graph field." },
+      { "name": "source-record-lift", "value": "0 18px 45px rgba(0, 0, 0, 0.32)", "purpose": "Lifts source-native record reconstructions inside the drawer." },
+      { "name": "connector-logo-lift", "value": "0 10px 28px color-mix(in srgb, var(--connector) 9%, transparent)", "purpose": "Gives each connector logo a quiet source-native seat inside its card." },
+      { "name": "connector-workbench-lift", "value": "0 22px 70px rgba(0, 0, 0, 0.20)", "purpose": "Separates the active inline setup workbench from the connector catalog." }
+    ],
+    "motion": [
+      { "name": "state-fast", "value": "180ms ease", "purpose": "Dashboard hover, border, background, and color response." },
+      { "name": "rail-state", "value": "220ms cubic-bezier(0.2, 0.8, 0.2, 1)", "purpose": "Connection and PR rail expansion and collapse." },
+      { "name": "graph-selection", "value": "240ms ease", "purpose": "Selected-path glow, dimming, saturation, and node-state changes." },
+      { "name": "node-drift", "value": "5800ms ease-in-out infinite", "purpose": "Gentle continuous dashboard node drift; disabled under reduced motion." },
+      { "name": "graph-node-rejoin", "value": "spring 0.0065; damping 0.9; local repulsion distance 6.4", "purpose": "Hands clamped release velocity or a bounded Arrow-key nudge into local repulsion and a damped return home; pointer-capture loss ends safely, reduced-motion pointer release snaps, and physics sleeps when settled or hidden." },
+      { "name": "node-response", "value": "280ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Artifact node scale and spatial response." },
+      { "name": "drawer-enter", "value": "420ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Evidence drawer entrance and exit." },
+      { "name": "recovery-meter", "value": "900ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Recovered-event meter fill." },
+      { "name": "beacon", "value": "2600ms ease-in-out infinite", "purpose": "Signals the highest-value or current evidence nodes; disabled under reduced motion." }
+    ],
+    "breakpoints": [
+      { "name": "artifact-compact", "value": "900px" },
+      { "name": "dashboard-compact", "value": "900px" },
+      { "name": "dashboard-mobile", "value": "680px" },
+      { "name": "connections-two-column", "value": "900px" },
+      { "name": "connections-one-column", "value": "680px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Connection Rail Source",
+      "kind": "button",
+      "description": "Source-native connection mark in the collapsible left instrument rail.",
+      "html": "<a class=\"ds-source-control\" href=\"#\"><span class=\"ds-source-well\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 2.8a9.2 9.2 0 0 0-2.9 17.9c.46.08.63-.2.63-.45v-1.77c-2.56.56-3.1-1.09-3.1-1.09-.42-1.07-1.03-1.35-1.03-1.35-.84-.58.06-.57.06-.57.93.07 1.42.96 1.42.96.83 1.42 2.17 1.01 2.7.77.08-.6.32-1.01.59-1.24-2.05-.23-4.2-1.02-4.2-4.55 0-1 .36-1.83.95-2.47-.1-.23-.41-1.17.09-2.44 0 0 .77-.25 2.53.94A8.8 8.8 0 0 1 12 7.13a8.7 8.7 0 0 1 2.3.31c1.76-1.19 2.53-.94 2.53-.94.5 1.27.19 2.21.1 2.44.59.64.94 1.46.94 2.47 0 3.54-2.16 4.31-4.21 4.54.33.29.62.85.62 1.72v2.58c0 .25.17.54.63.45A9.2 9.2 0 0 0 12 2.8Z\" fill=\"currentColor\"/></svg><i></i></span><span class=\"ds-source-copy\"><b>GitHub</b><small>CONNECTED</small></span></a>",
+      "css": ".ds-source-control { min-height: 48px; display: inline-flex; align-items: center; gap: 12px; color: var(--dim); text-decoration: none; } .ds-source-well { position: relative; width: 46px; height: 46px; flex: none; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: var(--surface-2); color: #f2f0f7; transition: transform .18s, border-color .18s; } .ds-source-well svg { width: 20px; height: 20px; } .ds-source-well i { position: absolute; right: 0; bottom: 3px; width: 7px; height: 7px; border: 1px solid var(--surface); border-radius: 50%; background: var(--green); box-shadow: 0 2px 8px rgba(94,230,168,.55); } .ds-source-copy { display: flex; flex-direction: column; } .ds-source-copy b { color: var(--ink); font: 500 13px 'IBM Plex Sans',sans-serif; } .ds-source-copy small { color: var(--faint); font: 10px 'IBM Plex Mono',monospace; } .ds-source-control:hover .ds-source-well { transform: translateY(-2px); border-color: var(--line-bright); } .ds-source-control:focus-visible { outline: 1px solid var(--cyan); outline-offset: 3px; }"
+    },
+    {
+      "name": "Connector Logo Card",
+      "kind": "card",
+      "refersTo": "connector-card",
+      "description": "Source-native selection card from the explicit three-column Connections catalog.",
+      "html": "<button class=\"ds-connector-card ds-connector-card-selected\" type=\"button\" aria-expanded=\"true\"><span class=\"ds-connector-logo\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 2 4.5 12 12 22l7.5-10L12 2Zm0 5.1 3.7 4.9-3.7 4.9L8.3 12 12 7.1Z\" fill=\"currentColor\"/></svg></span><span class=\"ds-connector-copy\"><strong>Jira</strong><small>Issues, acceptance criteria, and project decisions</small></span><span class=\"ds-connector-state\"><i></i>MANUAL</span><span class=\"ds-connector-mode\">FILE / PASTE FALLBACK</span></button>",
+      "css": ".ds-connector-card { --connector: #2684ff; position: relative; width: min(360px,100%); min-height: 188px; display: grid; grid-template-columns: 58px 1fr; grid-template-rows: auto 1fr auto; gap: 12px 15px; padding: 22px; overflow: hidden; border: 1px solid var(--line); border-radius: 4px; background: linear-gradient(145deg,color-mix(in srgb,var(--connector) 5%,var(--surface)) 0%,var(--surface) 48%); color: var(--ink); text-align: left; cursor: pointer; transition: transform .18s,border-color .18s,background .18s; } .ds-connector-card::after { content: ''; position: absolute; inset: auto 0 0; height: 2px; background: var(--connector); opacity: 0; transform: scaleX(.35); transition: opacity .18s,transform .18s; } .ds-connector-card:hover,.ds-connector-card-selected { transform: translateY(-2px); border-color: color-mix(in srgb,var(--connector) 50%,transparent); background: linear-gradient(145deg,color-mix(in srgb,var(--connector) 9%,var(--surface)) 0%,var(--surface) 52%); } .ds-connector-card-selected::after { opacity: 1; transform: scaleX(1); } .ds-connector-logo { width: 58px; height: 58px; display: grid; place-items: center; border: 1px solid color-mix(in srgb,var(--connector) 38%,transparent); border-radius: 15px; background: color-mix(in srgb,var(--connector) 9%,var(--surface-2)); color: var(--connector); box-shadow: 0 10px 28px color-mix(in srgb,var(--connector) 9%,transparent); } .ds-connector-logo svg { width: 30px; height: 30px; } .ds-connector-copy { display: flex; flex-direction: column; gap: 5px; padding-top: 3px; } .ds-connector-copy strong { font: 600 19px/1.2 'Saira Condensed',sans-serif; letter-spacing: .025em; } .ds-connector-copy small { max-width: 30ch; color: var(--faint); font: 11px/1.45 'IBM Plex Sans',sans-serif; } .ds-connector-state { position: absolute; top: 17px; right: 17px; display: flex; align-items: center; gap: 6px; color: var(--faint); font: 9px 'IBM Plex Mono',monospace; letter-spacing: .06em; } .ds-connector-state i { width: 5px; height: 5px; border-radius: 50%; background: currentColor; } .ds-connector-mode { grid-column: 1/3; align-self: end; color: var(--dim); font: 10px 'IBM Plex Mono',monospace; letter-spacing: .07em; } .ds-connector-card:focus-visible { outline: 1px solid var(--cyan); outline-offset: 3px; }"
+    },
+    {
+      "name": "Inline Connector Workbench",
+      "kind": "custom",
+      "description": "Source-accented in-page setup and deterministic import workbench revealed by connector selection.",
+      "html": "<section class=\"ds-connector-workbench\"><header class=\"ds-workbench-intro\"><span class=\"ds-workbench-logo\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 2 4.5 12 12 22l7.5-10L12 2Zm0 5.1 3.7 4.9-3.7 4.9L8.3 12 12 7.1Z\" fill=\"currentColor\"/></svg></span><div><small>SELECTED SOURCE</small><h2>Jira</h2><p>FILE / PASTE FALLBACK</p></div></header><div class=\"ds-workbench-fields\"><label><span>REPOSITORY <small>optional</small></span><input value=\"acme/platform\" readonly></label><label><span>BRANCH <small>optional</small></span><input value=\"feature/retry\" readonly></label><label class=\"ds-workbench-dump\"><span>CHAT OR API EXPORT</span><textarea readonly>{\"key\":\"QA-241\",\"summary\":\"Retry semantics\"}</textarea></label></div><footer class=\"ds-workbench-actions\"><button class=\"ds-workbench-secondary\" type=\"button\">CHOOSE FILE</button><button class=\"ds-workbench-primary\" type=\"button\">ADD TO KNOWLEDGE GRAPH</button><p>Known formats are parsed deterministically. Unknown text is preserved as auditable source evidence.</p></footer></section>",
+      "css": ".ds-connector-workbench { --connector: #2684ff; width: min(920px,100%); display: grid; grid-template-columns: 230px minmax(0,1fr); gap: 28px; padding: 26px; border: 1px solid color-mix(in srgb,var(--connector) 38%,transparent); border-radius: 4px; background: linear-gradient(120deg,color-mix(in srgb,var(--connector) 7%,var(--surface)) 0%,var(--surface) 45%); box-shadow: 0 22px 70px rgba(0,0,0,.2); color: var(--ink); font-family: 'IBM Plex Sans',sans-serif; } .ds-workbench-intro { display: flex; align-items: flex-start; gap: 15px; } .ds-workbench-logo { width: 58px; height: 58px; flex: none; display: grid; place-items: center; border: 1px solid color-mix(in srgb,var(--connector) 38%,transparent); border-radius: 15px; background: color-mix(in srgb,var(--connector) 9%,var(--surface-2)); color: var(--connector); } .ds-workbench-logo svg { width: 30px; height: 30px; } .ds-workbench-intro small,.ds-workbench-intro p,.ds-workbench-fields label>span { color: var(--dim); font: 10px 'IBM Plex Mono',monospace; letter-spacing: .06em; } .ds-workbench-intro small { color: var(--faint); font-size: 9px; } .ds-workbench-intro h2 { margin: 0 0 5px; font: 600 21px 'Saira Condensed',sans-serif; } .ds-workbench-intro p { margin: 0; } .ds-workbench-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; } .ds-workbench-fields label { display: flex; flex-direction: column; gap: 7px; } .ds-workbench-fields label small { color: var(--faint); } .ds-workbench-fields input,.ds-workbench-fields textarea { width: 100%; border: 1px solid var(--line); border-radius: 3px; background: rgba(6,6,15,.72); color: var(--ink); font: 12px 'IBM Plex Mono',monospace; } .ds-workbench-fields input { min-height: 42px; padding: 0 12px; } .ds-workbench-fields textarea { min-height: 100px; padding: 12px; resize: vertical; } .ds-workbench-fields input:focus,.ds-workbench-fields textarea:focus { outline: 0; border-color: color-mix(in srgb,var(--connector) 62%,transparent); } .ds-workbench-dump { grid-column: 1/3; } .ds-workbench-actions { grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; } .ds-workbench-actions button { min-height: 42px; padding: 0 14px; border-radius: 3px; color: var(--ink); cursor: pointer; } .ds-workbench-secondary { border: 1px solid var(--line-bright); background: transparent; } .ds-workbench-primary { border: 1px solid color-mix(in srgb,var(--connector) 68%,transparent); background: color-mix(in srgb,var(--connector) 16%,var(--surface-2)); } .ds-workbench-actions button:hover { border-color: var(--connector); } .ds-workbench-actions button:focus-visible { outline: 1px solid var(--cyan); outline-offset: 3px; } .ds-workbench-actions p { flex-basis: 100%; margin: 3px 0 0; color: var(--faint); font-size: 11px; } @media(max-width:700px) { .ds-connector-workbench { grid-template-columns: 1fr; padding: 19px; } .ds-workbench-fields { grid-template-columns: 1fr; } .ds-workbench-dump,.ds-workbench-actions { grid-column: 1; } }"
+    },
+    {
+      "name": "Dashboard Graph Node",
+      "kind": "custom",
+      "description": "Source-colored, directly draggable and keyboard-nudgeable company-memory node whose attached edges follow live and whose release motion rejoins its authored constellation position.",
+      "html": "<button class=\"ds-graph-node ds-graph-node-active ds-graph-node-dragging\" type=\"button\" aria-grabbed=\"true\" aria-label=\"Agent session. Drag or use arrow keys to move; double-click, Home, or Enter to reset.\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"6\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\"/></svg><span>Agent session shaped retry semantics</span></button>",
+      "css": ".ds-graph-node { --node-color: var(--violet); position: relative; width: 54px; height: 54px; display: grid; place-items: center; padding: 0; border: 1px solid color-mix(in srgb,var(--node-color) 42%,transparent); border-radius: 50%; background: color-mix(in srgb,var(--surface-2) 86%,var(--node-color) 14%); color: var(--node-color); cursor: grab; touch-action: none; user-select: none; box-shadow: 0 3px 16px color-mix(in srgb,var(--node-color) 18%,transparent); transition: opacity .24s, filter .24s, border-color .24s, box-shadow .24s, scale .24s; } .ds-graph-node svg { width: 44%; height: 44%; } .ds-graph-node span { position: absolute; top: calc(100% + 9px); left: 50%; width: max-content; max-width: 210px; padding: 4px 7px; transform: translateX(-50%) translateY(3px); opacity: 0; color: var(--ink); background: rgba(10,8,22,.92); border: 1px solid var(--line); font: 10px 'IBM Plex Mono',monospace; } .ds-graph-node-active { --selection: var(--cyan); border-color: var(--selection); color: var(--selection); scale: 1.13; box-shadow: 0 4px 18px color-mix(in srgb,var(--selection) 55%,transparent),0 8px 38px color-mix(in srgb,var(--selection) 25%,transparent); } .ds-graph-node-dragging { cursor: grabbing; scale: 1.2; border-color: var(--node-color); box-shadow: 0 7px 22px color-mix(in srgb,var(--node-color) 58%,transparent),0 18px 48px rgba(0,0,0,.42); } .ds-graph-node:hover span,.ds-graph-node:focus-visible span { opacity: 1; transform: translateX(-50%) translateY(0); } .ds-graph-node:focus-visible { outline: 1px solid var(--cyan); outline-offset: 3px; }"
+    },
+    {
+      "name": "Pull Request Rail Choice",
+      "kind": "button",
+      "refersTo": "pr-choice",
+      "description": "Tall PR index record that activates one unique evidence path.",
+      "html": "<button class=\"ds-pr-choice\" type=\"button\" aria-pressed=\"true\"><span class=\"ds-pr-choice-top\"><b>#4471</b><i></i></span><strong>Queue-backed bulk export</strong><span>platform-api · Aria K.</span><small>15 nodes · 28s ago</small></button>",
+      "css": ".ds-pr-choice { --pr-color: var(--cyan); width: 300px; min-height: 132px; display: flex; flex-direction: column; align-items: flex-start; gap: 5px; padding: 16px 13px; border: 0; border-top: 1px solid var(--line); background: color-mix(in srgb,var(--pr-color) 7%,transparent); color: var(--ink); text-align: left; transition: background .18s,color .18s; } .ds-pr-choice-top { width: 100%; display: flex; justify-content: space-between; align-items: center; } .ds-pr-choice-top b { color: var(--pr-color); font: 500 11px 'IBM Plex Mono',monospace; } .ds-pr-choice-top i { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 2px 7px rgba(94,230,168,.6); } .ds-pr-choice > strong { max-width: 27ch; font: 500 13px/1.35 'IBM Plex Sans',sans-serif; } .ds-pr-choice > span:not(.ds-pr-choice-top),.ds-pr-choice small { color: var(--faint); font-size: 10.5px; } .ds-pr-choice small { margin-top: auto; font-family: 'IBM Plex Mono',monospace; } .ds-pr-choice:hover { background: color-mix(in srgb,var(--pr-color) 10%,transparent); } .ds-pr-choice:focus-visible { outline: 1px solid var(--cyan); outline-offset: 3px; }"
+    },
+    {
+      "name": "Selection Artifact Dock",
+      "kind": "custom",
+      "refersTo": "selection-action",
+      "description": "Contextual dock revealed by PR selection, carrying path summary and the artifact action.",
+      "html": "<section class=\"ds-selection-dock\"><b>#4471</b><div><strong>Queue-backed bulk export</strong><span>15 related nodes · 4 sources</span></div><a href=\"#\">OPEN ARTIFACT <svg viewBox=\"0 0 18 18\" aria-hidden=\"true\"><path d=\"m6 12 6-6M7 6h5v5\"/></svg></a></section>",
+      "css": ".ds-selection-dock { --selection: var(--cyan); width: min(700px,92vw); min-height: 76px; display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; gap: 16px; padding: 12px 13px 12px 16px; background: rgba(11,9,24,.94); border: 1px solid color-mix(in srgb,var(--selection) 48%,transparent); border-radius: 4px; box-shadow: 0 16px 52px rgba(0,0,0,.38),0 5px 22px color-mix(in srgb,var(--selection) 13%,transparent); color: var(--ink); } .ds-selection-dock > b { color: var(--selection); font: 600 13px 'IBM Plex Mono',monospace; } .ds-selection-dock > div { display: flex; flex-direction: column; } .ds-selection-dock > div strong { font: 500 14px 'IBM Plex Sans',sans-serif; } .ds-selection-dock > div span { color: var(--faint); font-size: 11px; } .ds-selection-dock a { min-height: 44px; padding: 0 13px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid color-mix(in srgb,var(--selection) 68%,transparent); border-radius: 3px; background: color-mix(in srgb,var(--selection) 11%,transparent); color: var(--ink); text-decoration: none; font: 600 11px 'Saira Condensed',sans-serif; letter-spacing: .08em; } .ds-selection-dock a svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.5; } .ds-selection-dock a:hover { background: color-mix(in srgb,var(--selection) 18%,transparent); } .ds-selection-dock a:focus-visible { outline: 1px solid var(--cyan); outline-offset: 3px; }"
+    },
+    {
+      "name": "Artifact Source Filter",
+      "kind": "chip",
+      "refersTo": "filter-chip",
+      "description": "Pill control for revealing or suppressing one source channel in the artifact graph.",
+      "html": "<button class=\"ds-source-chip\" type=\"button\" aria-pressed=\"true\"><span class=\"ds-chip-dot\"></span>CLAUDE CODE</button>",
+      "css": ".ds-source-chip { --c: var(--violet); min-height: 44px; padding: 8px 13px 8px 11px; display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); border-radius: 999px; background: rgba(12,10,26,.6); color: var(--dim); font: 11px/1.4 'IBM Plex Mono', monospace; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; transition: border-color .2s, color .2s; } .ds-chip-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--c); box-shadow: 0 0 8px var(--c); } .ds-source-chip:hover { border-color: rgba(150,140,210,.22); color: var(--ink); } .ds-source-chip:focus-visible { outline: 1px solid var(--cyan); outline-offset: 2px; } .ds-source-chip[aria-pressed='false'] { color: var(--faint); border-color: rgba(140,130,190,.09); }"
+    },
+    {
+      "name": "Artifact Evidence Node",
+      "kind": "custom",
+      "description": "Source-colored artifact record whose geometry and glow expose its role in the recovered path.",
+      "html": "<button class=\"ds-node\" type=\"button\"><span class=\"ds-orb\">C</span><span class=\"ds-node-label\"><b>CLAUDE CODE</b>Undocumented design fork<small>DAY 3</small></span></button>",
+      "css": ".ds-node { --c: var(--violet); position: relative; display: inline-flex; align-items: center; gap: 18px; border: 0; padding: 18px; background: transparent; color: inherit; cursor: grab; } .ds-orb { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; background: color-mix(in srgb,var(--c) 18%,rgba(8,7,18,.94)); border: 1px solid color-mix(in srgb,var(--c) 58%,rgba(255,255,255,.16)); color: white; font: 600 12px 'IBM Plex Mono', monospace; box-shadow: 0 0 0 1px rgba(255,255,255,.35) inset,0 0 14px var(--c),0 0 38px color-mix(in srgb,var(--c) 55%,transparent); transition: transform .28s cubic-bezier(.16,1,.3,1),box-shadow .28s ease; } .ds-node-label { width: 208px; color: var(--dim); text-align: left; font: 13px/1.35 'IBM Plex Sans',sans-serif; } .ds-node-label b,.ds-node-label small { display: block; color: var(--c); font: 11px/1.5 'IBM Plex Mono',monospace; letter-spacing: .12em; } .ds-node-label small { color: var(--faint); margin-top: 3px; } .ds-node:hover .ds-orb,.ds-node:focus-visible .ds-orb { transform: scale(1.45); box-shadow: 0 0 0 1px rgba(255,255,255,.6) inset,0 0 26px var(--c),0 0 70px var(--c); } .ds-node:focus-visible { outline: 1px solid var(--cyan); outline-offset: 2px; } .ds-node:active { cursor: grabbing; }"
+    },
+    {
+      "name": "Evidence Drawer",
+      "kind": "custom",
+      "description": "Glass overlay for source, consequence, excerpt, and QA verification prompts.",
+      "html": "<aside class=\"ds-drawer\"><div class=\"ds-drawer-head\"><span class=\"ds-drawer-badge\"><i></i>CLAUDE CODE</span><h2>Design fork decided inside an agent session</h2><small>SESSION 09-7C4B · 26 MIN</small></div><div class=\"ds-drawer-body\"><b>WHY THIS MATTERS</b><p>The decision changed schema behavior and never reached the plan.</p></div></aside>",
+      "css": ".ds-drawer { width: min(440px,92vw); color: var(--ink); background: rgba(14,12,30,.78); backdrop-filter: blur(22px) saturate(130%); border-left: 1px solid rgba(150,140,210,.22); box-shadow: -40px 0 90px rgba(0,0,0,.55); font-family: 'IBM Plex Sans',sans-serif; } .ds-drawer-head { padding: 26px 28px 20px; border-bottom: 1px solid rgba(140,130,190,.09); display: flex; flex-direction: column; gap: 12px; } .ds-drawer-badge { display: inline-flex; align-items: center; gap: 7px; color: var(--violet); font: 11px 'IBM Plex Mono',monospace; letter-spacing: .15em; } .ds-drawer-badge i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor; } .ds-drawer h2 { margin: 0; font: 600 21px/1.15 'Saira Condensed',sans-serif; letter-spacing: .03em; } .ds-drawer-head small,.ds-drawer-body b { color: var(--faint); font: 11px/1.5 'IBM Plex Mono',monospace; letter-spacing: .12em; } .ds-drawer-body { padding: 22px 28px 32px; } .ds-drawer-body p { color: var(--dim); line-height: 1.55; }"
+    },
+    {
+      "name": "Source-Native Record",
+      "kind": "card",
+      "refersTo": "source-record",
+      "description": "Deterministic light-surface reconstruction that preserves the originating tool's visual identity.",
+      "html": "<article class=\"ds-source-record\"><header>CLAUDE CODE <small>SESSION 09-7C4B</small></header><div class=\"ds-source-thread\"><p class=\"ds-source-user\"><b>ARIA</b>job-level key from user, filters, timestamp?</p><p class=\"ds-source-assistant\"><b>CLAUDE</b>Timestamp makes retries non-idempotent.</p></div></article>",
+      "css": ".ds-source-record { overflow: hidden; border-radius: 12px; background: #f7f4ed; color: #28231f; box-shadow: 0 18px 45px rgba(0,0,0,.32); font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; } .ds-source-record header { min-height: 42px; padding: 0 13px; display: flex; align-items: center; gap: 9px; background: #eee9df; border-bottom: 1px solid #ded7ca; font-size: 12px; font-weight: 650; } .ds-source-record header small { margin-left: auto; color: #777; } .ds-source-thread { padding: 12px; display: flex; flex-direction: column; gap: 10px; } .ds-source-thread p { margin: 0; padding: 10px 12px; border-radius: 10px; font: 11.5px/1.48 'IBM Plex Mono',monospace; } .ds-source-thread b { display: block; margin-bottom: 5px; color: #9b4a2f; font: 700 10px/1 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; letter-spacing: .08em; } .ds-source-user { margin-left: 18px !important; background: #e7e1d7; } .ds-source-assistant { margin-right: 9px !important; background: #fffdf8; border: 1px solid #ded7ca; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Provenance Constellation",
+    "overview": "Temporal is a void-black operations console where scattered work resolves into an inspectable path. The system pairs the scanability of an engineering control room with the spatial memory of a star chart: gold marks the path that shipped, cyan exposes live evidence, violet identifies agent activity, and red preserves consequential work that was pruned rather than erased.\n\nThe authenticated dashboard makes that memory spatial. An Obsidian-like provenance field owns the full-height canvas, framed by a compact source rail and a collapsible pull-request index. Selecting a PR lights one evidence-colored path, quiets unrelated context, and raises the artifact action above the graph. The Connections surface is the focused setup exception: a compact source-native logo-card catalog opens one inline import workbench without leaving the page. The artifact renderer remains the deeper reading environment, intensifying the same world with luminous branches, a glass evidence drawer, and source-native record reconstructions. None of these surfaces should drift into a generic integration dashboard or generic cyberpunk ornament.",
+    "keyCharacteristics": [
+      "Void-black canvases with quiet violet tonal layering.",
+      "Sacred gold paths, cyan evidence signals, violet agent state, and red pruned branches.",
+      "Condensed uppercase operating headlines, neutral sans-serif reading text, and mono provenance labels.",
+      "A graph-first shell framed by collapsible instrument rails rather than a card dashboard.",
+      "Fine structural rules, sparse glows, circular graph nodes, and tightly squared 44px controls.",
+      "Source-native logos and record treatments preserved inside the shared Temporal frame.",
+      "A deliberate three-column connector catalog that collapses to two and one columns before opening an inline source workbench."
+    ],
+    "rules": [
+      { "name": "The Evidence Channel Rule", "body": "Artifact channels keep their semantic jobs; the dashboard may reuse the luminous palette only to assign each indexed PR a stable, unique path color.", "section": "colors" },
+      { "name": "The Source-Native Rule", "body": "GitHub (#f2f0f7), Slack (#36c5f0), Jira (#2684ff), Notion (#e9e6f7), Claude Code (#d97757), and Codex (#a87bff) keep their shipped identity accents inside the Temporal frame; never recolor every source into a single house accent.", "section": "colors" },
+      { "name": "The Quiet Void Rule", "body": "Most pixels remain void or neutral ink. Luminous accents stay scarce enough that readiness, evidence, and drift are immediately recognizable.", "section": "colors" },
+      { "name": "The Three-Voice Rule", "body": "Use condensed type for command and hierarchy, sans-serif for comprehension, and mono only for provenance or machine state.", "section": "typography" },
+      { "name": "The Operational Case Rule", "body": "Uppercase belongs to short headings, labels, and controls. Sentences, PR titles, and evidence explanations remain sentence case.", "section": "typography" },
+      { "name": "The Graph-Owns-the-Canvas Rule", "body": "On the dashboard, connections live quietly at left, PR history lives at right, and the selected evidence path plus its artifact action own the center.", "section": "layout" },
+      { "name": "The Visible-PR-Trigger Rule", "body": "Mobile may hide the PR list, but never the labeled control that opens it.", "section": "layout" },
+      { "name": "The Three-to-One Connector Rule", "body": "The user-approved connector catalog is explicitly three columns on wide screens, two at 900px, and one at 680px; preserve that sequence and keep the selected workbench inline below it.", "section": "layout" },
+      { "name": "The Flat Console Rule", "body": "Dashboard surfaces stay flat at rest; glow appears only for live state, a selected evidence path, focus, or the contextual artifact action.", "section": "elevation" },
+      { "name": "The Provenance Depth Rule", "body": "Stronger depth belongs to the artifact’s evidence layers, where spatial separation helps the user follow a recovered decision path.", "section": "elevation" },
+      { "name": "The Two-Geometries Rule", "body": "Circles describe evidence in the graph; tight rectangles describe actions and operational structure.", "section": "shapes" },
+      { "name": "The Source Badge Rule", "body": "The 15px connector-logo radius belongs to compact source identity, not general containers; do not spread it to cards, fields, or the graph shell.", "section": "shapes" }
+    ],
+    "dos": [
+      "Do make the ready artifact the clearest action in the selected-PR dock.",
+      "Do let the company-memory graph own the dashboard’s first viewport.",
+      "Do light one uniquely colored PR path at a time and dim unrelated context.",
+      "Do keep the add-connection plus and mobile “PR” trigger visibly discoverable.",
+      "Do preserve semantic color across graph edges, nodes, status dots, focus, and supporting labels.",
+      "Do keep every surfaced claim attached to readable source, timestamp, and consequence.",
+      "Do use thin rules and alignment to organize dense operational information.",
+      "Do preserve source-native marks and record styling inside the Temporal evidence drawer.",
+      "Do support keyboard focus, 44px rail targets, a readable 10px graph legend, the mobile PR overlay, and reduced motion.",
+      "Do keep dashboard node movement reversible: attached edges follow pointer and Arrow-key nudges, release rejoins the authored constellation, double-click/Enter/Home reset, lost capture ends safely, and reduced-motion pointer release snaps home.",
+      "Do keep the Connections catalog at three, two, then one column and carry each source’s native accent from card selection into its inline workbench.",
+      "Do make import outcomes deterministic and auditable: parse known formats, preserve unknown text, and report returned record and relationship counts."
+    ],
+    "donts": [
+      "Don't turn the dashboard into a grid of interchangeable rounded cards.",
+      "Don't replace the graph-first shell with a conventional navigation-and-queue dashboard.",
+      "Don't leave the artifact action floating when no PR path is selected.",
+      "Don't use glow, gradients, or star-field effects without a provenance or state meaning.",
+      "Don't flatten gold, cyan, violet, red, and green into interchangeable accents.",
+      "Don't style source evidence as if Temporal authored it.",
+      "Don't hide pruned work merely because it did not reach the diff.",
+      "Don't let connection management or the PR index visually overpower the constellation.",
+      "Don't apply the dashboard’s no-card-grid rule to the user-approved Connections catalog, or apply the Connections grid back onto the graph dashboard.",
+      "Don't turn the Custom connectors placeholder into active-looking affordance until it has a real workflow."
+    ]
+  }
+}

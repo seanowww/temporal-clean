@@ -1,0 +1,3 @@
+interface:
+  display_name: "Temporal Artifact Builder"
+  short_description: "Assemble evidence-grounded PR context"

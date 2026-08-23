@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "temporal": {
+      "type": "http",
+      "url": "http://localhost:3000/api/mcp",
+      "headers": {
+        "Authorization": "Bearer ${TEMPORAL_COLLECTOR_TOKEN}"
+      }
+    }
+  }
+}
