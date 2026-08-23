@@ -97,7 +97,7 @@ const html = renderer.replace(marker, `let remoteArtifact = ${safeJson};`);
 const artifactName = `temporal-pr-${payload.pull_request.number}`;
 const runUrl = `${process.env.GITHUB_SERVER_URL || "https://github.com"}/${payload.repository.full_name}/actions/runs/${process.env.GITHUB_RUN_ID || ""}`;
 const summary = formatSummary(artifact, evidenceCount, runUrl);
-const comment = formatComment(artifact, evidenceCount, runUrl, artifactName);
+const comment = formatComment(runUrl, artifactName);
 
 await Promise.all([
   writeFile(path.join(outputDirectory, `pr-${payload.pull_request.number}.html`), html, "utf8"),
@@ -128,14 +128,12 @@ function formatSummary(artifact: ArtifactPayload, committed: number, runUrl: str
   ].join("\n");
 }
 
-function formatComment(artifact: ArtifactPayload, committed: number, runUrl: string, artifactName: string) {
-  const sources = artifact.coverage.map((entry) => entry.source).join(" · ") || "GitHub";
-  const events = artifact.events.filter((event) => event.src !== "git").slice(0, 5).map((event) => `- **${text(event.title, "Evidence record")}** — ${text(event.stamp, event.src)}`);
-  const checks = qaChecks(artifact).map((check) => `- ${check}`);
+function formatComment(runUrl: string, artifactName: string) {
   return [
-    "<!-- temporal-actions-artifact -->", "## Temporal timeline", "", artifact.summary, "", `**Sources:** ${sources} · **Committed evidence:** ${committed}`, "",
-    "### Key context", "", ...(events.length ? events : ["- GitHub PR context only; export local evidence to enrich this timeline."]), "",
-    "### Verify", "", ...(checks.length ? checks : ["- Review the changed files against the PR description."]), "",
-    `**[Download the interactive timeline from this workflow run →](${runUrl}#artifacts)**`, "", `<sub>Artifact: \`${artifactName}\` · Updated for \`${payload.pull_request.head.sha.slice(0, 7)}\`</sub>`, "",
+    "<!-- temporal-actions-artifact -->",
+    `## [Open the Temporal HTML timeline →](${runUrl}#artifacts)`,
+    "",
+    `<sub>Download \`${artifactName}\`, unzip it, and open \`pr-${payload.pull_request.number}.html\`.</sub>`,
+    "",
   ].join("\n");
 }
