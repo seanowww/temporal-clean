@@ -1,0 +1,2 @@
+{"uuid":"m1","type":"user","timestamp":"2026-08-20T20:00:00.000Z","message":{"role":"user","content":"Why do retries duplicate rows?"}}
+{"uuid":"m2","type":"assistant","timestamp":"2026-08-20T20:01:00.000Z","message":{"role":"assistant","content":[{"type":"text","text":"Shard-local cursors move during rebalance. Use a job-level key."}]}}
