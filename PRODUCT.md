@@ -8,7 +8,7 @@ web
 
 ## Stack
 
-Delegated: Next.js and TypeScript for the dashboard, API routes, connector webhooks, and artifact delivery; PostgreSQL is the intended production graph store.
+Delegated: Next.js and TypeScript for the local dashboard and connector setup; SQLite for private local company memory; GitHub Actions for reproducible PR traversal, artifact generation, protected artifact retention, and reviewer delivery.
 
 ## Users
 
@@ -24,7 +24,7 @@ Temporal is the provenance layer above code review: it explains why code reached
 
 ## Operating Context
 
-Company administrators approve GitHub, Slack, Claude Code, Codex, Notion, and future connections. Sources continuously populate a provenance graph. Opening or updating a PR triggers a bounded traversal, evidence-backed synthesis, artifact generation, and delivery of the artifact link to the PR.
+Company administrators approve Slack, Claude Code, Codex, Notion, and future local connections. Sources populate a private local provenance graph. An explicit sanitizer exports immutable, repository-scoped evidence for review. Opening or updating a PR rebuilds the derived graph in GitHub Actions, runs bounded traversal, generates a self-contained artifact, and updates a durable PR comment without a hosted Temporal backend.
 
 ## Capabilities and Constraints
 
@@ -35,6 +35,8 @@ Company administrators approve GitHub, Slack, Claude Code, Codex, Notion, and fu
 - Artifacts are versioned when PR evidence changes.
 - The first vertical slice uses GitHub and Claude Code before adding Slack and Notion.
 - Source access must be enforced during traversal, not only when rendering.
+- Local SQLite and raw connector payloads never enter CI; only reviewed committed evidence does.
+- Reviewer delivery must not depend on a tunnel, GitHub Pages, or a continuously running Temporal process.
 
 ## Brand Commitments
 

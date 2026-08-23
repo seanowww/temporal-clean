@@ -2,6 +2,20 @@
 
 Temporal builds evidence-backed timelines for pull request review from a permission-aware provenance graph.
 
+## GitHub Actions quick start
+
+The reviewer-facing product runs in GitHub Actions: no tunnel, GitHub Pages deployment, GitHub App, or hosted Temporal backend is required. Opening or updating a PR builds a deterministic timeline, updates one durable PR comment, and uploads the complete interactive HTML as a repository-protected workflow artifact.
+
+The workflow works immediately with GitHub PR context. To include locally collected Claude, Codex, Slack, Jira, or Notion evidence, export an explicit sanitized snapshot:
+
+```bash
+npm run temporal:export -- --repo owner/repository
+npm run temporal:export -- --repo owner/repository --yes
+git diff -- .temporal/evidence
+```
+
+The first command is a dry run; `--yes` writes the snapshot. Review it before committing. See **[`docs/GITHUB_ACTIONS.md`](docs/GITHUB_ACTIONS.md)** for the security boundary, artifact retention, and fork behavior.
+
 ## Run locally
 
 ```bash
@@ -33,7 +47,7 @@ Required for GitHub App repository access — in local development the **Create 
 
 Always required: `TEMPORAL_APP_URL`, for artifact links and the Manifest flow's callback URL.
 
-For a static demo, `TEMPORAL_STATIC_ARTIFACT_BASE_URL` can point GitHub comments,
+For the legacy GitHub App demo, `TEMPORAL_STATIC_ARTIFACT_BASE_URL` can point GitHub comments,
 checks, and deployments at self-contained `<pull-request-id>.html` snapshots instead
 of the running Temporal server.
 
@@ -51,7 +65,7 @@ Optional authenticated connectors:
 
 Every connector also supports file/paste fallback. Claude Code and Codex use local chat dumps by default; both also arrive live through the [claude-mem connector](#claude-mem-connector) below when it's installed.
 
-## GitHub App
+## GitHub App (legacy local webhook mode)
 
 Full setup instructions live in **[`docs/GITHUB_APP_SETUP.md`](docs/GITHUB_APP_SETUP.md)**. In short: open `/connections`, expand GitHub, and select **Create Temporal app**. This runs a GitHub App Manifest flow that creates the App, sets the webhook and callback URLs, requests only the permissions Temporal uses (Contents read; Pull requests, Checks, and Deployments write), and writes the generated credentials and webhook secret straight into `.env.local`. The one-click writer is disabled in production — see that doc for the manual/hosting-provider path, and run `npm run github:check` any time to verify an installation end to end.
 
