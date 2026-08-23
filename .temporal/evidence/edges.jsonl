@@ -1,0 +1,4 @@
+{"fromNodeId":"demo:wl-12:prd","toNodeId":"demo:wl-12:privacy","type":"SUPERSEDES","confidence":1}
+{"fromNodeId":"demo:wl-12:privacy","toNodeId":"demo:wl-12:privacy-ack","type":"LEADS_TO","confidence":1}
+{"fromNodeId":"demo:wl-12:privacy-ack","toNodeId":"demo:wl-12:claude-storage","type":"LEADS_TO","confidence":0.95}
+{"fromNodeId":"demo:wl-12:claude-storage","toNodeId":"demo:wl-12:senior-decision","type":"LEADS_TO","confidence":1}
