@@ -1,0 +1,19 @@
+{
+  "issues": [
+    {
+      "id": "WL-12",
+      "key": "WL-12",
+      "self": "https://temporal-demo.atlassian.net/browse/WL-12",
+      "fields": {
+        "summary": "Launch the customer waitlist form",
+        "description": "Create a public waitlist with five fields: Name, Organization, Email, Phone Number, and Profile Photo. Store each submission and show a confirmation state.",
+        "created": "2026-08-18T16:00:00Z",
+        "updated": "2026-08-18T16:00:00Z",
+        "status": { "name": "In Progress" },
+        "creator": { "displayName": "Maya Chen" },
+        "assignee": { "displayName": "Johnny Park" },
+        "labels": ["waitlist", "launch"]
+      }
+    }
+  ]
+}

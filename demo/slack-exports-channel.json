@@ -1,0 +1,34 @@
+{
+  "channels": [
+    {
+      "id": "C09WAITLIST",
+      "name": "waitlist-launch",
+      "messages": [
+        {
+          "client_msg_id": "demo-slack-1",
+          "ts": "2026-08-19T17:15:00Z",
+          "user": "maya-pm",
+          "text": "WL-12 privacy review: remove Phone Number from the waitlist. We don't need it for launch, and collecting it creates consent and retention work Legal has not approved. Name, Organization, Email, and Profile Photo remain in scope."
+        },
+        {
+          "client_msg_id": "demo-slack-2",
+          "ts": "2026-08-19T17:19:00Z",
+          "user": "johnny-swe",
+          "text": "Understood. I'll remove Phone Number from WL-12 before opening the PR and keep the other four fields."
+        },
+        {
+          "client_msg_id": "demo-slack-3",
+          "ts": "2026-08-21T18:04:00Z",
+          "user": "johnny-swe",
+          "text": "WL-12 update: Claude found that this Supabase project has no private profile-photo bucket or signed-upload policy. Adding the photo field now means introducing storage provisioning and access controls outside the ticket."
+        },
+        {
+          "client_msg_id": "demo-slack-4",
+          "ts": "2026-08-21T18:12:00Z",
+          "user": "elena-senior-swe",
+          "text": "Agreed. Defer Profile Photo from WL-12. Ship Name, Organization, and Email only. We'll add photos in a follow-up after the private bucket, signed uploads, retention, and deletion path are reviewed."
+        }
+      ]
+    }
+  ]
+}
