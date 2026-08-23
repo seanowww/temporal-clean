@@ -1,0 +1,4 @@
+{"role":"user","content":"For WL-12, can I add a profile-photo upload to our existing Supabase setup without adding infrastructure?","timestamp":"2026-08-21T17:40:00Z"}
+{"role":"assistant","content":"Supabase supports Storage, but this project has no provisioned private bucket, signed-upload policy, retention rule, or deletion path. The current app only has database and auth configuration. Shipping the photo field safely would require new storage and access-control work outside WL-12.","timestamp":"2026-08-21T17:43:00Z"}
+{"role":"user","content":"So the clean option for this PR is to leave photo out and ask Elena for a follow-up?","timestamp":"2026-08-21T17:45:00Z"}
+{"role":"assistant","content":"Yes. Keep the waitlist schema to Name, Organization, and Email, document that Profile Photo is deferred, and have senior engineering approve the storage follow-up.","timestamp":"2026-08-21T17:46:00Z"}

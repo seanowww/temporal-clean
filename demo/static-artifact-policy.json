@@ -1,0 +1,11 @@
+{
+  "pr-1": {
+    "excludeEvidenceIds": [
+      "claude-session-tonight.jsonl-session"
+    ],
+    "reason": "This session concerns Temporal UI design, not the EXP-99 export implementation; ticket and branch linkage alone made it a false-positive timeline event."
+  },
+  "pr-2": {
+    "excludeEvidenceIds": []
+  }
+}
