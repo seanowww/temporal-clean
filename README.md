@@ -4,15 +4,15 @@ Temporal builds evidence-backed timelines for pull request review from a permiss
 
 ## Try Temporal on a pull request
 
-The reviewer-facing product runs in GitHub Actions: no tunnel, GitHub Pages deployment, GitHub App, hosted backend, environment file, or API key is required.
+The reviewer-facing product runs in GitHub Actions: no tunnel, GitHub App, hosted backend, environment file, or API key is required.
 
 1. Fork or copy this repository into an account where you can run Actions. If GitHub shows **Workflows aren't being run on this forked repository**, open the **Actions** tab and select **I understand my workflows, go ahead and enable them**.
 2. Create a branch, make any small change, push it, and open a pull request against `main` in that same repository.
 3. Wait for **Temporal / Build PR timeline**. A clean run currently takes about 30 seconds.
-4. Read the `github-actions[bot]` comment. Open the linked workflow run, scroll to **Artifacts**, and download `temporal-pr-<number>`.
-5. Unzip it and open `pr-<number>.html` in a browser. The HTML is self-contained and remains usable offline.
+4. In a public repository with Pages enabled, click **Open the Temporal HTML timeline** in the `github-actions[bot]` comment. It opens immediately in the browser.
+5. In a private repository, use the protected fallback: open the linked workflow run, download `temporal-pr-<number>`, unzip it, and open `pr-<number>.html`.
 
-The artifact is visible only to signed-in users with repository read access and is retained for 30 days by the workflow. Fork-originated PRs into somebody else's repository still receive the Check and artifact, but GitHub's read-only fork token prevents the comment; see [fork behavior](docs/GITHUB_ACTIONS.md#fork-pull-requests).
+Public repositories need one-time Pages setup; follow the [instant HTML setup](docs/GITHUB_ACTIONS.md#reviewer-experience). Published timelines are public, while fallback artifacts require repository read access and are retained for 30 days. Fork-originated PRs into somebody else's repository still receive the Check and artifact, but GitHub's read-only fork token prevents publishing and commenting; see [fork behavior](docs/GITHUB_ACTIONS.md#fork-pull-requests).
 
 > **Current distribution boundary:** the workflow uses Temporal's scripts from this repository. It is ready for dogfooding in a fork or copy of Temporal, but it is not yet packaged as a one-file Action for unrelated repositories.
 

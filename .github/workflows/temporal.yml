@@ -6,7 +6,6 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
 
 concurrency:
   group: temporal-pr-${{ github.event.pull_request.number }}
@@ -17,6 +16,9 @@ jobs:
     name: Build PR timeline
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Check out the pull request
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -47,8 +49,59 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      - name: Update the durable PR comment
-        if: github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]'
+      - name: Link the protected download from a private PR
+        if: github.event.repository.private && github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]'
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: npm run temporal:comment
+
+  pages:
+    name: Publish instant HTML view
+    if: github.event.repository.private == false && github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]'
+    needs: timeline
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Download the generated timeline
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: temporal-pr-${{ github.event.pull_request.number }}
+          path: temporal-artifact
+
+      - name: Publish the versioned HTML and update the PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          pages_url=$(gh api "repos/${REPOSITORY}/pages" --jq '.html_url')
+          if ! gh api "repos/${REPOSITORY}/git/ref/heads/gh-pages" >/dev/null 2>&1; then
+            default_branch=$(gh api "repos/${REPOSITORY}" --jq '.default_branch')
+            base_sha=$(gh api "repos/${REPOSITORY}/git/ref/heads/${default_branch}" --jq '.object.sha')
+            gh api --method POST "repos/${REPOSITORY}/git/refs" -f ref='refs/heads/gh-pages' -f sha="$base_sha" >/dev/null
+          fi
+
+          file_path="pr-${PR_NUMBER}.html"
+          encoded_html=$(base64 < "temporal-artifact/${file_path}" | tr -d '\n')
+          existing_sha=$(gh api "repos/${REPOSITORY}/contents/${file_path}?ref=gh-pages" --jq '.sha' 2>/dev/null || true)
+          if [ -n "$existing_sha" ]; then
+            gh api --method PUT "repos/${REPOSITORY}/contents/${file_path}" -f branch=gh-pages \
+              -f message="temporal: update PR ${PR_NUMBER} timeline" -f content="$encoded_html" -f sha="$existing_sha" >/dev/null
+          else
+            gh api --method PUT "repos/${REPOSITORY}/contents/${file_path}" -f branch=gh-pages \
+              -f message="temporal: publish PR ${PR_NUMBER} timeline" -f content="$encoded_html" >/dev/null
+          fi
+
+          html_url="${pages_url%/}/${file_path}"
+          body="<!-- temporal-actions-artifact -->
+          ## [Open the Temporal HTML timeline →](${html_url})"
+          comment_id=$(gh api "repos/${REPOSITORY}/issues/${PR_NUMBER}/comments" --paginate \
+            --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | contains("<!-- temporal-actions-artifact -->"))) | .id' | head -n 1)
+          if [ -n "$comment_id" ]; then
+            gh api --method PATCH "repos/${REPOSITORY}/issues/comments/${comment_id}" -f body="$body" >/dev/null
+          else
+            gh api --method POST "repos/${REPOSITORY}/issues/${PR_NUMBER}/comments" -f body="$body" >/dev/null
+          fi
