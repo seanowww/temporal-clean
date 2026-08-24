@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "repository": "seanowww/temporal-clean",
+  "exportedAt": "2026-08-23T23:59:00.000Z",
+  "records": 3,
+  "edges": 2,
+  "excluded": {
+    "restricted": 0,
+    "synthetic": 0,
+    "otherRepository": 0
+  },
+  "digest": "36db8566a1e23dde7f2db095108b54b9802c72173b00639a7e5bdd055517a538"
+}
