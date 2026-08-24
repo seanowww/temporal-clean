@@ -70,15 +70,16 @@
 
   header.hud {
     position: fixed; top: 0; left: 0; right: 0; z-index: 6;
-    display: flex; align-items: flex-start; justify-content: space-between;
+    display: grid; grid-template-columns: minmax(0, 1fr) auto;
+    align-items: flex-start; justify-content: space-between;
     gap: 32px;
-    padding: 22px 30px 34px;
+    padding: 22px clamp(20px, 3vw, 48px) 40px;
     background: linear-gradient(180deg, rgba(6,6,15,.94) 30%, rgba(6,6,15,0) 100%);
     pointer-events: none;
   }
   header.hud > * { pointer-events: auto; }
 
-  .mark { display: flex; align-items: baseline; gap: 12px; }
+  .mark { display: flex; align-items: baseline; gap: 12px; min-width: 0; }
   .mark h1 {
     font-family: "Saira Condensed", sans-serif;
     font-weight: 700;
@@ -95,9 +96,11 @@
   }
   .pr-line {
     margin-top: 7px;
+    max-width: min(920px, 72vw);
     font-family: "IBM Plex Mono", monospace;
     font-size: var(--step--1);
     color: var(--ink-dim);
+    text-wrap: pretty;
   }
   .pr-line b { color: var(--ink); font-weight: 500; }
 
@@ -144,7 +147,7 @@
   #field::-webkit-scrollbar-track { background: transparent; }
   #field::-webkit-scrollbar-thumb { background: rgba(140,130,190,.22); border-radius: 5px; }
 
-  #stage { position: relative; width: 100%; }
+  #stage { position: relative; width: 100%; min-height: 100%; }
 
   /* ---------- nodes ---------- */
 
@@ -203,7 +206,7 @@
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    width: 208px;
+    width: clamp(176px, 18vw, 264px);
     color: var(--ink-dim);
     pointer-events: none;
     transition: color .2s ease, opacity .2s ease;
@@ -249,7 +252,7 @@
 
   .tick {
     position: absolute;
-    left: 30px;
+    left: clamp(20px, 3vw, 48px);
     transform: translateY(-50%);
     display: flex; align-items: center; gap: 10px;
     font-family: "IBM Plex Mono", monospace;
@@ -273,7 +276,7 @@
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 6;
     display: flex; align-items: flex-end; justify-content: space-between;
     gap: 28px;
-    padding: 32px 30px 22px;
+    padding: 38px clamp(20px, 3vw, 48px) 22px;
     background: linear-gradient(0deg, rgba(6,6,15,.95) 25%, rgba(6,6,15,0) 100%);
     pointer-events: none;
   }
@@ -476,11 +479,32 @@
   }
 
   @media (max-width: 900px) {
-    .label { width: 140px; }
+    header.hud { gap: 18px; }
+    .mark { align-items: flex-start; flex-direction: column; gap: 5px; }
+    .mark h1 { font-size: 26px; }
+    .pr-line { max-width: 66vw; }
+    .label { width: clamp(138px, 23vw, 190px); }
     .label .txt { font-size: 11.5px; }
-    header.hud { flex-direction: column; gap: 14px; }
-    .readout { align-items: flex-start; text-align: left; }
     .hint { display: none; }
+  }
+
+  @media (max-width: 680px) {
+    header.hud { grid-template-columns: 1fr; padding-bottom: 32px; }
+    .mark { flex-direction: row; align-items: baseline; }
+    .mark .sub { display: none; }
+    .pr-line { max-width: none; padding-right: 8px; }
+    .readout { display: none; }
+    .tick { display: none; }
+    .node[data-place] .label {
+      left: calc(50% + var(--gap)); right: auto;
+      width: calc(100vw - 128px);
+      text-align: left;
+    }
+    footer.deck { padding-top: 42px; }
+    .legend { max-width: calc(100vw - 96px); flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+    .legend::-webkit-scrollbar { display: none; }
+    .chip { flex: none; }
+    .replay { width: 48px; padding: 0; justify-content: center; font-size: 0; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -499,8 +523,8 @@
       <span class="sub" id="artifactMode">BRANCH MONITOR / v0.1 · SYNTHETIC DEMO</span>
     </div>
     <div class="pr-line">
-      <b id="prNumber">PR #128</b> &nbsp;·&nbsp; <span id="prTitle">feat(waitlist): ship privacy-safe signup</span> &nbsp;·&nbsp;
-      <b id="prFiles">6 files</b> <span id="prDelta">+214 −48</span> &nbsp;·&nbsp; <span id="prState">awaiting QA</span>
+      <b id="prNumber">PR #128</b> · <span id="prTitle">feat(waitlist): ship privacy-safe signup</span> ·
+      <b id="prFiles">6 files</b> <span id="prDelta">+214 −48</span> · <span id="prState">awaiting QA</span>
     </div>
   </div>
   <div class="readout">
@@ -882,9 +906,9 @@
   const tctx    = threads.getContext("2d");
   const nebula  = initNebula(document.getElementById("nebula"));
 
-  const PAD_TOP = 148, PAD_BOTTOM = 150, PX_PER_DAY = 196, MIN_GAP = 72;
+  const PAD_TOP = 156, PAD_BOTTOM = 150, BASE_PX_PER_DAY = 196, MIN_GAP = 92, MAX_GAP = 220;
 
-  let W = 0, H = 0, contentH = 0, spineX = 0, laneGap = 0;
+  let W = 0, H = 0, contentH = 0, spineX = 0, laneGap = 0, pxPerDay = BASE_PX_PER_DAY;
   const nodeEls = new Map();
   const ordered = [...EVENTS].sort((a, b) => b.t - a.t);   // oldest first, top to bottom
 
@@ -897,22 +921,51 @@
     threads.height = Math.floor(H * dpr);
     tctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    spineX  = Math.max(210, Math.min(W * 0.40, W - 420));
-    laneGap = Math.min(190, Math.max(110, W * 0.15));
+    const mobile = W <= 680;
+    const topPad = mobile ? 178 : PAD_TOP;
+    const bottomPad = mobile ? 138 : PAD_BOTTOM;
+    spineX  = mobile ? 54 : Math.max(300, Math.min(W * 0.5, W - 300));
+    laneGap = Math.min(210, Math.max(118, W * 0.14));
 
-    // Position by time, but never let two events collide: real elapsed time
-    // still shows in the gaps, dense stretches just get pushed apart.
+    // Time controls the relative gaps, while the viewport controls the overall
+    // composition. Dense timelines scroll; sparse timelines use the canvas.
+    // Measured label footprints set the hard collision floor.
     const t0 = ordered[0].t;
-    let prevY = -Infinity;
-    ordered.forEach(e => {
-      const byTime = PAD_TOP + (t0 - e.t) * PX_PER_DAY;
-      e.y = Math.max(prevY + MIN_GAP, byTime);
+    const available = Math.max(260, H - topPad - bottomPad);
+    const minSpan = Math.max(0, (ordered.length - 1) * MIN_GAP);
+    const targetSpan = ordered.length <= 2
+      ? Math.min(MAX_GAP, available * .38)
+      : Math.max(minSpan, Math.min(available, (ordered.length - 1) * MAX_GAP));
+    const weights = ordered.slice(1).map((event, index) => Math.max(.05, ordered[index].t - event.t));
+    const weightTotal = weights.reduce((sum, value) => sum + value, 0) || 1;
+    const flexibleSpace = Math.max(0, targetSpan - minSpan);
+    const totalDays = Math.max(.1, t0 - ordered[ordered.length - 1].t);
+    pxPerDay = targetSpan / totalDays;
+    const startY = topPad + Math.max(0, (available - targetSpan) / 2);
+
+    let prevY = startY;
+    let prevFootprint = 0;
+    ordered.forEach((e, index) => {
+      const el = nodeEls.get(e.id);
+      const labelHeight = el?.querySelector(".label")?.scrollHeight || 48;
+      const footprint = Math.max(labelHeight, (4.5 + e.imp * 2.6) * 2);
+      if (index === 0) e.y = startY;
+      else {
+        const timeGap = MIN_GAP + flexibleSpace * (weights[index - 1] / weightTotal);
+        const collisionGap = (prevFootprint + footprint) / 2 + 24;
+        e.y = prevY + Math.max(timeGap, collisionGap);
+      }
       prevY = e.y;
-      e.x = spineX + e.lane * laneGap;
+      prevFootprint = footprint;
+      e.x = Math.max(mobile ? 54 : 280, Math.min(spineX + e.lane * laneGap, W - 280));
+      if (Math.abs(e.lane) < .01) {
+        e.place = index % 2 ? "right" : "left";
+        if (el) el.dataset.place = e.place;
+      }
       e.r = 4.5 + e.imp * 2.6;
     });
 
-    contentH = ordered[ordered.length - 1].y + PAD_BOTTOM;
+    contentH = Math.max(H, ordered[ordered.length - 1].y + bottomPad);
     stage.style.height = contentH + "px";
 
     nodeEls.forEach((el, id) => {
@@ -929,7 +982,7 @@
 
   // content-space y for an arbitrary day value, interpolated across the placed nodes
   function yForDay(t) {
-    if (t >= ordered[0].t) return ordered[0].y - (t - ordered[0].t) * PX_PER_DAY;
+    if (t >= ordered[0].t) return ordered[0].y - (t - ordered[0].t) * pxPerDay;
     for (let i = 1; i < ordered.length; i++) {
       const a = ordered[i - 1], b = ordered[i];
       if (t >= b.t) {
@@ -938,7 +991,7 @@
       }
     }
     const last = ordered[ordered.length - 1];
-    return last.y + (last.t - t) * PX_PER_DAY;
+    return last.y + (last.t - t) * pxPerDay;
   }
 
   function buildAxis(t0) {
@@ -952,7 +1005,7 @@
     }
     const now = document.createElement("div");
     now.className = "tick now";
-    now.style.top = yForDay(0.15) + "px";
+    now.style.top = ordered[ordered.length - 1].y + "px";
     now.textContent = "PR opened";
     stage.appendChild(now);
   }
