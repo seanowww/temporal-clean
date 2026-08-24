@@ -941,14 +941,15 @@
     const flexibleSpace = Math.max(0, targetSpan - minSpan);
     const totalDays = Math.max(.1, t0 - ordered[ordered.length - 1].t);
     pxPerDay = targetSpan / totalDays;
+    const startY = topPad + Math.max(0, (available - targetSpan) / 2);
 
-    let prevY = topPad;
+    let prevY = startY;
     let prevFootprint = 0;
     ordered.forEach((e, index) => {
       const el = nodeEls.get(e.id);
       const labelHeight = el?.querySelector(".label")?.scrollHeight || 48;
       const footprint = Math.max(labelHeight, (4.5 + e.imp * 2.6) * 2);
-      if (index === 0) e.y = topPad;
+      if (index === 0) e.y = startY;
       else {
         const timeGap = MIN_GAP + flexibleSpace * (weights[index - 1] / weightTotal);
         const collisionGap = (prevFootprint + footprint) / 2 + 24;
