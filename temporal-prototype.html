@@ -1005,7 +1005,7 @@
     }
     const now = document.createElement("div");
     now.className = "tick now";
-    now.style.top = yForDay(0.15) + "px";
+    now.style.top = ordered[ordered.length - 1].y + "px";
     now.textContent = "PR opened";
     stage.appendChild(now);
   }
